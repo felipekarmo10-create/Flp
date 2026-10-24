@@ -1,0 +1,2658 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLP - Automação & Manutenção Industrial</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        flp: {
+                            yellow: '#FFC700',
+                            yellowHover: '#E5B200',
+                            gold: '#FFB800',
+                            dark: '#0A0D12',
+                            card: '#121721',
+                            border: '#262F3E',
+                            accent: '#F39C12'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Signature Pad JS -->
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0D12;
+            color: #F8FAFC;
+        }
+
+        /* Estilo para Datalist / Combobox */
+        input::-webkit-calendar-picker-indicator {
+            filter: invert(0.8) sepia(100%) saturate(1000%) hue-rotate(5deg);
+            cursor: pointer;
+            opacity: 0.8;
+        }
+        input::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+
+        /* Impressão / PDF A4 Otimizado com Cores Vivas e Nome Automático */
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                font-size: 10pt;
+            }
+
+            .no-print, nav, button, .action-buttons, header, #toast-container {
+                display: none !important;
+            }
+
+            .print-area {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 10mm 12mm;
+                background: #ffffff !important;
+                color: #000000 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            .print-area * {
+                color: #000000 !important;
+                border-color: #cbd5e1 !important;
+            }
+
+            .print-header-bg {
+                background-color: #0A0D12 !important;
+                color: #FFFFFF !important;
+                border-bottom: 4px solid #FFC700 !important;
+            }
+
+            .print-header-bg * {
+                color: #FFFFFF !important;
+            }
+
+            .print-header-bg .text-flp-yellow {
+                color: #FFC700 !important;
+            }
+
+            .print-card {
+                background-color: #F8FAFC !important;
+                border: 1px solid #E2E8F0 !important;
+            }
+
+            .print-table th {
+                background-color: #0A0D12 !important;
+                color: #FFC700 !important;
+            }
+            
+            .print-table td {
+                border-bottom: 1px solid #E2E8F0 !important;
+            }
+
+            .print-table input {
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A0D12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #262F3E;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FFC700;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-flp-yellow selection:text-black">
+
+    <!-- Global Datalists (Serviços e Equipamentos Dinâmicos) -->
+    <datalist id="list-servicos-global"></datalist>
+    <datalist id="list-clientes-global"></datalist>
+
+    <datalist id="list-equipamentos">
+        <option value="Inversor de Frequência WEG CFW500"></option>
+        <option value="Inversor Danfoss Micro Drive FC-51 / AutomationDrive"></option>
+        <option value="Servo Drive e Servo Motor LTi DRIVES"></option>
+        <option value="CLP Siemens S7-1200 / IHM"></option>
+        <option value="Painel Elétrico de Comando Silo de Abastecimento"></option>
+        <option value="Motor Dahlander Trifásico"></option>
+        <option value="Válvula Solenóide SMC SY3140"></option>
+        <option value="Relé de Corrente LUKMA CAD-A-RL2"></option>
+        <option value="Máquina Injetora / Prensas / Sopradoras"></option>
+    </datalist>
+
+    <datalist id="list-marcas">
+        <option value="WEG"></option>
+        <option value="Siemens"></option>
+        <option value="Danfoss"></option>
+        <option value="Schneider Electric"></option>
+        <option value="LTi DRIVES"></option>
+        <option value="SMC"></option>
+        <option value="Metaltex"></option>
+        <option value="Lukma"></option>
+        <option value="Brother"></option>
+    </datalist>
+
+    <datalist id="list-pagamentos">
+        <option value="50% Entrada + 50% na Conclusão dos Serviços"></option>
+        <option value="Faturamento 30 Dias após Aceite"></option>
+        <option value="À Vista via Pix com 5% de Desconto"></option>
+        <option value="Faturamento 28 / 42 / 56 Dias (Pessoa Jurídica)"></option>
+        <option value="Pagamento na Entrega do Relatório / Emissão de TRT"></option>
+    </datalist>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none no-print"></div>
+
+    <!-- Header / Navigation -->
+    <header class="bg-flp-card border-b border-flp-border sticky top-0 z-40 no-print shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo & Brand Header -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
+                    <div id="header-logo-preview" class="h-12 w-auto flex items-center justify-center">
+                        <div class="bg-black p-2 rounded-lg border border-flp-yellow/40 flex items-center gap-2">
+                            <span class="text-flp-yellow font-black text-2xl tracking-tighter">FLP</span>
+                            <div class="h-6 w-0.5 bg-flp-yellow/40"></div>
+                            <div class="text-[9px] uppercase font-bold text-white leading-tight">
+                                Automação &<br><span class="text-flp-yellow">Manutenção</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden sm:block">
+                        <span class="text-xs text-flp-yellow font-bold uppercase tracking-widest block">Força • Lógica • Precisão</span>
+                        <p class="text-[11px] text-slate-400">Soluções Elétricas e Automação Industrial</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex space-x-1">
+                    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-tab active flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg transition-all bg-flp-yellow text-black shadow-lg shadow-flp-yellow/20">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> PAINEL
+                    </button>
+                    <button onclick="switchTab('orcamento')" id="tab-orcamento" class="nav-tab flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg transition-all text-slate-300 hover:text-flp-yellow hover:bg-slate-800">
+                        <i data-lucide="calculator" class="w-4 h-4"></i> ORÇAMENTO
+                    </button>
+                    <button onclick="switchTab('relatorio')" id="tab-relatorio" class="nav-tab flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg transition-all text-slate-300 hover:text-flp-yellow hover:bg-slate-800">
+                        <i data-lucide="file-text" class="w-4 h-4"></i> RELATÓRIO
+                    </button>
+                    <button onclick="switchTab('clientes')" id="tab-clientes" class="nav-tab flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg transition-all text-slate-300 hover:text-flp-yellow hover:bg-slate-800">
+                        <i data-lucide="users" class="w-4 h-4"></i> CLIENTES
+                    </button>
+                    <button onclick="switchTab('catalogo')" id="tab-catalogo" class="nav-tab flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg transition-all text-slate-300 hover:text-flp-yellow hover:bg-slate-800">
+                        <i data-lucide="tag" class="w-4 h-4"></i> CATÁLOGO
+                    </button>
+                    <button onclick="switchTab('historico')" id="tab-historico" class="nav-tab flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg transition-all text-slate-300 hover:text-flp-yellow hover:bg-slate-800">
+                        <i data-lucide="folder-open" class="w-4 h-4"></i> HISTÓRICO
+                    </button>
+                    <button onclick="switchTab('emissor')" id="tab-emissor" class="nav-tab flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg transition-all text-slate-300 hover:text-flp-yellow hover:bg-slate-800">
+                        <i data-lucide="building" class="w-4 h-4"></i> EMPRESA
+                    </button>
+                </nav>
+
+                <!-- Mobile Menu Toggle -->
+                <div class="md:hidden">
+                    <button onclick="toggleMobileMenu()" class="p-2 rounded-lg text-flp-yellow hover:bg-slate-800">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Dropdown Navigation -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-flp-border bg-flp-card px-4 pt-2 pb-4 space-y-1">
+            <button onclick="switchTab('dashboard'); toggleMobileMenu()" class="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg text-black bg-flp-yellow">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> PAINEL COMERCIAL
+            </button>
+            <button onclick="switchTab('orcamento'); toggleMobileMenu()" class="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg text-slate-300 hover:bg-slate-800">
+                <i data-lucide="calculator" class="w-4 h-4"></i> GERAR ORÇAMENTO
+            </button>
+            <button onclick="switchTab('relatorio'); toggleMobileMenu()" class="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg text-slate-300 hover:bg-slate-800">
+                <i data-lucide="file-text" class="w-4 h-4"></i> RELATÓRIO TÉCNICO
+            </button>
+            <button onclick="switchTab('clientes'); toggleMobileMenu()" class="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg text-slate-300 hover:bg-slate-800">
+                <i data-lucide="users" class="w-4 h-4"></i> CADASTRO DE CLIENTES
+            </button>
+            <button onclick="switchTab('catalogo'); toggleMobileMenu()" class="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg text-slate-300 hover:bg-slate-800">
+                <i data-lucide="tag" class="w-4 h-4"></i> CATÁLOGO DE SERVIÇOS
+            </button>
+            <button onclick="switchTab('historico'); toggleMobileMenu()" class="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg text-slate-300 hover:bg-slate-800">
+                <i data-lucide="folder-open" class="w-4 h-4"></i> HISTÓRICO DE DOCUMENTOS
+            </button>
+            <button onclick="switchTab('emissor'); toggleMobileMenu()" class="w-full text-left flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-lg text-slate-300 hover:bg-slate-800">
+                <i data-lucide="building" class="w-4 h-4"></i> MINHA EMPRESA
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+
+        <!-- ========================================== -->
+        <!-- TAB 0: DASHBOARD COMERCIAL (HOME)          -->
+        <!-- ========================================== -->
+        <section id="sec-dashboard" class="tab-content space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-flp-card p-6 rounded-xl border border-flp-border">
+                <div>
+                    <h1 class="text-xl font-black text-white uppercase tracking-wide flex items-center gap-2">
+                        <i data-lucide="layout-dashboard" class="text-flp-yellow"></i> Painel Comercial & Inteligência Operacional
+                    </h1>
+                    <p class="text-xs text-slate-400">Visão 360° de propostas, relatórios, garantias, agenda de campo e dimensionamento elétrico.</p>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button onclick="switchTab('orcamento')" class="px-4 py-2 bg-flp-yellow hover:bg-flp-yellowHover text-black rounded-lg text-xs font-black transition flex items-center gap-2 shadow-lg shadow-flp-yellow/20">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Novo Orçamento
+                    </button>
+                    <button onclick="switchTab('relatorio')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-2 border border-flp-border">
+                        <i data-lucide="file-plus" class="w-4 h-4"></i> Novo Relatório
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Metric Cards Primários -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-flp-card p-5 rounded-xl border border-flp-border flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total em Propostas (Mês)</p>
+                        <h3 id="dash-total-valor" class="text-xl font-black text-white mt-1">R$ 0,00</h3>
+                        <p class="text-[10px] text-emerald-400 font-semibold mt-1">Volume orçado</p>
+                    </div>
+                    <div class="p-3 bg-flp-yellow/10 rounded-xl border border-flp-yellow/30 text-flp-yellow">
+                        <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-flp-card p-5 rounded-xl border border-flp-border flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Aguardando Aprovação</p>
+                        <h3 id="dash-qtd-aguardando" class="text-xl font-black text-amber-400 mt-1">0</h3>
+                        <p class="text-[10px] text-amber-300 font-semibold mt-1">Propostas pendentes 🟡</p>
+                    </div>
+                    <div class="p-3 bg-amber-500/10 rounded-xl border border-amber-500/30 text-amber-400">
+                        <i data-lucide="clock" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-flp-card p-5 rounded-xl border border-flp-border flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Propostas Aprovadas</p>
+                        <h3 id="dash-qtd-aprovados" class="text-xl font-black text-emerald-400 mt-1">0</h3>
+                        <p class="text-[10px] text-emerald-300 font-semibold mt-1">Prontas para execução 🟢</p>
+                    </div>
+                    <div class="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/30 text-emerald-400">
+                        <i data-lucide="check-circle" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-flp-card p-5 rounded-xl border border-flp-border flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Relatórios Emitidos</p>
+                        <h3 id="dash-qtd-relatorios" class="text-xl font-black text-purple-400 mt-1">0</h3>
+                        <p class="text-[10px] text-purple-300 font-semibold mt-1">Intervenções documentadas 🟣</p>
+                    </div>
+                    <div class="p-3 bg-purple-500/10 rounded-xl border border-purple-500/30 text-purple-400">
+                        <i data-lucide="file-check" class="w-6 h-6"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADICIONADO: FUNIL OPERACIONAL E KPIS DE PERFORMANCE -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-flp-card p-4 rounded-xl border border-flp-border flex items-center gap-3">
+                    <div class="p-3 bg-blue-500/10 text-blue-400 rounded-lg border border-blue-500/20">
+                        <i data-lucide="trending-up" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Taxa de Conversão</p>
+                        <h4 id="dash-taxa-conversao" class="text-lg font-black text-white">0%</h4>
+                        <p class="text-[10px] text-blue-400 font-medium">Aprovação comercial</p>
+                    </div>
+                </div>
+
+                <div class="bg-flp-card p-4 rounded-xl border border-flp-border flex items-center gap-3">
+                    <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20">
+                        <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ticket Médio / Projeto</p>
+                        <h4 id="dash-ticket-medio" class="text-lg font-black text-white">R$ 0,00</h4>
+                        <p class="text-[10px] text-emerald-400 font-medium">Média por proposta</p>
+                    </div>
+                </div>
+
+                <div class="bg-flp-card p-4 rounded-xl border border-flp-border flex items-center gap-3">
+                    <div class="p-3 bg-rose-500/10 text-rose-400 rounded-lg border border-rose-500/20">
+                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Propostas Expiradas (>15d)</p>
+                        <h4 id="dash-propostas-vencidas" class="text-lg font-black text-rose-400">0</h4>
+                        <p class="text-[10px] text-slate-400 font-medium">Requerem follow-up</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTELIGÊNCIA OPERACIONAL & GARANTIAS -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Ranking de Serviços e Marcas Atendidas -->
+                <div class="bg-flp-card p-5 rounded-xl border border-flp-border space-y-4">
+                    <h2 class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="activity" class="text-flp-yellow"></i> Serviços Mais Demandados
+                    </h2>
+                    <div id="dash-ranking-servicos" class="space-y-2 text-xs">
+                        <!-- Renderizado Dinamicamente -->
+                    </div>
+
+                    <div class="pt-4 border-t border-flp-border space-y-3">
+                        <h3 class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="cpu" class="text-flp-yellow"></i> Marcas & Equipamentos
+                        </h3>
+                        <div id="dash-marcas-list" class="flex flex-wrap gap-1.5 text-[10px]">
+                            <!-- Renderizado Dinamicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controle de TRTs Emitidos e Garantias -->
+                <div class="lg:col-span-2 bg-flp-card p-5 rounded-xl border border-flp-border space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="shield-check" class="text-flp-yellow"></i> Controle de TRT & Garantias Ativas (90 dias)
+                        </h2>
+                        <span id="dash-trt-badge" class="px-2 py-0.5 bg-black border border-flp-yellow/40 text-flp-yellow rounded text-[10px] font-bold">0 TRTs (CFT)</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-black text-flp-yellow uppercase font-bold text-[10px]">
+                                <tr>
+                                    <th class="p-2.5">Cliente / Planta</th>
+                                    <th class="p-2.5">Equipamento / Intervenção</th>
+                                    <th class="p-2.5">Data Serviço</th>
+                                    <th class="p-2.5 text-right">Término Garantia</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-garantias-tbody" class="divide-y divide-flp-border">
+                                <!-- Renderizado Dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADICIONADO: AGENDA DE PARADAS & FERRAMENTAS DE CAMPO (CALCULADORA + PENDÊNCIAS) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Mini Agenda & Lembrete Preventivo -->
+                <div class="lg:col-span-6 bg-flp-card p-5 rounded-xl border border-flp-border space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="calendar" class="text-flp-yellow"></i> Agenda de Intervenções & Paradas
+                        </h2>
+                        <button onclick="addAgendaItemPrompt()" class="px-2.5 py-1 bg-flp-yellow text-black rounded text-[10px] font-bold hover:bg-flp-yellowHover transition">+ Agendar</button>
+                    </div>
+
+                    <div id="dash-agenda-list" class="space-y-2 text-xs max-h-48 overflow-y-auto pr-1">
+                        <!-- Agenda Lista -->
+                    </div>
+
+                    <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-[11px] text-amber-300 space-y-1">
+                        <p class="font-bold uppercase text-[10px] flex items-center gap-1">
+                            <i data-lucide="bell" class="w-3.5 h-3.5"></i> Sugestão de Retorno Preventivo
+                        </p>
+                        <p id="dash-preventiva-sugestao">Analisando histórico de intervenções há mais de 6 meses...</p>
+                    </div>
+                </div>
+
+                <!-- Calculadora Elétrica de Motores & Bloco de Anotações -->
+                <div class="lg:col-span-6 bg-flp-card p-5 rounded-xl border border-flp-border space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Calculadora de Motores -->
+                        <div class="bg-black p-3.5 rounded-lg border border-flp-border space-y-2 text-xs">
+                            <h3 class="font-bold text-flp-yellow uppercase text-[10px] flex items-center gap-1">
+                                <i data-lucide="calculator" class="w-3.5 h-3.5"></i> Dimensionamento Elétrico
+                            </h3>
+                            <div>
+                                <label class="block text-[10px] text-slate-400">Potência Motor (CV):</label>
+                                <input type="number" id="calc-cv" value="5" step="0.5" oninput="calcularMotorTrifasico()" class="w-full bg-slate-900 border border-flp-border rounded p-1 text-white text-xs mt-0.5">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400">Tensão Nominal (V):</label>
+                                <select id="calc-volts" onchange="calcularMotorTrifasico()" class="w-full bg-slate-900 border border-flp-border rounded p-1 text-white text-xs mt-0.5">
+                                    <option value="220">220V Trifásico</option>
+                                    <option value="380" selected>380V Trifásico</option>
+                                    <option value="440">440V Trifásico</option>
+                                </select>
+                            </div>
+                            <div class="p-2 bg-slate-900 rounded border border-flp-border space-y-1 text-[11px] pt-2">
+                                <p class="text-slate-300">Corrente In: <span id="calc-corrente" class="font-bold text-flp-yellow">7.6 A</span></p>
+                                <p class="text-slate-300">Disjuntor-Motor: <span id="calc-disjuntor" class="font-bold text-white">6.3 - 10A</span></p>
+                                <p class="text-slate-300">Contator General: <span id="calc-contator" class="font-bold text-white">K3 (9A AC-3)</span></p>
+                            </div>
+                        </div>
+
+                        <!-- Bloco de Pendências / Anotações de Campo -->
+                        <div class="bg-black p-3.5 rounded-lg border border-flp-border space-y-2 text-xs flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold text-flp-yellow uppercase text-[10px] flex items-center gap-1">
+                                    <i data-lucide="check-square" class="w-3.5 h-3.5"></i> Pendências de Campo
+                                </h3>
+                                <div class="flex gap-1 mt-2">
+                                    <input type="text" id="todo-input" placeholder="Comprar contator 24VDC..." class="w-full bg-slate-900 border border-flp-border rounded p-1 text-white text-xs">
+                                    <button onclick="addTodoItem()" class="px-2 bg-flp-yellow text-black font-bold rounded">+</button>
+                                </div>
+                                <ul id="todo-list" class="mt-2 space-y-1 text-[11px] max-h-28 overflow-y-auto pr-1">
+                                    <!-- Renderizado Dinamicamente -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Atividades Recentes e Ações Rápida -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Lista de Documentos Recentes (2 colunas) -->
+                <div class="lg:col-span-2 bg-flp-card p-6 rounded-xl border border-flp-border space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="history" class="text-flp-yellow"></i> Últimos Documentos Emitidos
+                        </h2>
+                        <button onclick="switchTab('historico')" class="text-xs text-flp-yellow hover:underline font-bold">Ver todos →</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-black text-flp-yellow uppercase font-bold text-[10px]">
+                                <tr>
+                                    <th class="p-2.5">Tipo</th>
+                                    <th class="p-2.5">Código</th>
+                                    <th class="p-2.5">Cliente</th>
+                                    <th class="p-2.5">Valor / Título</th>
+                                    <th class="p-2.5 text-right">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-recent-tbody" class="divide-y divide-flp-border">
+                                <!-- Renderizado via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Atalhos e Dicas Comerciais -->
+                <div class="bg-flp-card p-6 rounded-xl border border-flp-border space-y-4">
+                    <h2 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="zap" class="text-flp-yellow"></i> Gestão Rápida FLP
+                    </h2>
+                    <div class="space-y-2.5 text-xs">
+                        <button onclick="switchTab('clientes')" class="w-full p-3 bg-black hover:bg-slate-800 rounded-lg border border-flp-border flex items-center justify-between text-left transition group">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-flp-yellow/10 text-flp-yellow rounded-md">
+                                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-white group-hover:text-flp-yellow">Cadastrar Novo Cliente</p>
+                                    <p class="text-[10px] text-slate-400">Adicione indústrias para auto-preencher</p>
+                                </div>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+                        </button>
+
+                        <button onclick="switchTab('catalogo')" class="w-full p-3 bg-black hover:bg-slate-800 rounded-lg border border-flp-border flex items-center justify-between text-left transition group">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-flp-yellow/10 text-flp-yellow rounded-md">
+                                    <i data-lucide="tag" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-white group-hover:text-flp-yellow">Tabela de Preços & Serviços</p>
+                                    <p class="text-[10px] text-slate-400">Configure valores base de hora e peças</p>
+                                </div>
+                            </div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500"></i>
+                        </button>
+
+                        <div class="p-3 bg-black/60 rounded-lg border border-flp-border text-[11px] text-slate-300 space-y-1">
+                            <p class="font-bold text-flp-yellow uppercase text-[10px] tracking-wider">💡 Dica de Agilidade</p>
+                            <p>Ao selecionar um cliente no formulário de orçamento, o sistema preenche automaticamente CNPJ, telefone, cidade e estado em 1 clique!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: GERADOR DE ORÇAMENTOS              -->
+        <!-- ========================================== -->
+        <section id="sec-orcamento" class="tab-content space-y-6 hidden">
+            <!-- Action Controls -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-flp-card p-4 rounded-xl border border-flp-border no-print">
+                <div>
+                    <h1 class="text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
+                        <i data-lucide="calculator" class="text-flp-yellow"></i> Proposta Comercial de Automação & Manutenção
+                    </h1>
+                    <p class="text-xs text-slate-400">Propostas com seleção rápida de clientes, itens do catálogo e compartilhamento direto.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="clearOrcamentoForm()" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg text-xs font-bold transition flex items-center gap-1.5 border border-flp-border">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Limpar
+                    </button>
+                    <button onclick="saveOrcamento()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-emerald-900/20">
+                        <i data-lucide="save" class="w-4 h-4"></i> Salvar
+                    </button>
+                    <button onclick="sendOrcamentoWhatsApp()" class="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-lg text-xs transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/20">
+                        <i data-lucide="message-square" class="w-4 h-4"></i> WhatsApp
+                    </button>
+                    <button onclick="sendOrcamentoEmail()" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-lg text-xs transition flex items-center gap-1.5 shadow-lg shadow-sky-600/20">
+                        <i data-lucide="mail" class="w-4 h-4"></i> E-mail
+                    </button>
+                    <button onclick="printDocumentWithPDFName('orcamento')" class="px-4 py-2 bg-flp-yellow hover:bg-flp-yellowHover text-black rounded-lg text-xs font-black transition flex items-center gap-1.5 shadow-lg shadow-flp-yellow/20">
+                        <i data-lucide="printer" class="w-4 h-4"></i> Gerar PDF / Imprimir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form Controls + Live Document Canvas -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Inputs Box (Left) -->
+                <div class="lg:col-span-5 space-y-6 no-print">
+                    
+                    <!-- Seleção / Dados do Cliente com Busca Rápida -->
+                    <div class="bg-flp-card p-5 rounded-xl border border-flp-border space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xs font-black text-flp-yellow uppercase tracking-wider flex items-center gap-2">
+                                <i data-lucide="user-check" class="w-4 h-4"></i> Dados do Cliente Industrial
+                            </h2>
+                            <button onclick="switchTab('clientes')" class="text-[10px] text-slate-400 hover:text-flp-yellow font-bold uppercase tracking-wider flex items-center gap-1">
+                                <i data-lucide="plus" class="w-3 h-3"></i> Novo
+                            </button>
+                        </div>
+
+                        <!-- Auto-preenchimento via Busca no CRM -->
+                        <div class="text-xs bg-black p-3 rounded-lg border border-flp-yellow/40 space-y-1">
+                            <label class="block font-bold text-flp-yellow">🔍 Buscar do Cadastro (1 Clique Auto-fill)</label>
+                            <select id="orc-select-cliente" onchange="autoFillClienteOrcamento(this.value)" class="w-full bg-slate-900 border border-flp-border rounded-lg p-2 text-white focus:border-flp-yellow focus:outline-none">
+                                <option value="">-- Selecione um Cliente Cadastrado --</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-3 text-xs pt-1">
+                            <div>
+                                <label class="block font-semibold text-slate-400 mb-1">Empresa / Razão Social *</label>
+                                <input type="text" id="orc-cliente-nome" oninput="updateOrcamentoPreview()" placeholder="Ex: Indústria Plastmetal S.A." class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-semibold text-slate-400 mb-1">CNPJ / CPF</label>
+                                    <input type="text" id="orc-cliente-doc" oninput="updateOrcamentoPreview()" placeholder="00.000.000/0001-00" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-400 mb-1">Contato / Telefone</label>
+                                    <input type="text" id="orc-cliente-fone" oninput="updateOrcamentoPreview()" placeholder="(11) 98765-4321" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="col-span-2">
+                                    <label class="block font-semibold text-slate-400 mb-1">Cidade / Planta</label>
+                                    <input type="text" id="orc-cliente-cidade" oninput="updateOrcamentoPreview()" placeholder="Jundiaí / SP" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-400 mb-1">UF</label>
+                                    <input type="text" id="orc-cliente-uf" oninput="updateOrcamentoPreview()" placeholder="SP" maxlength="2" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white uppercase focus:border-flp-yellow focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dados da Proposta & Status -->
+                    <div class="bg-flp-card p-5 rounded-xl border border-flp-border space-y-4">
+                        <h2 class="text-xs font-black text-flp-yellow uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="info" class="w-4 h-4"></i> Parâmetros da Proposta
+                        </h2>
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-400 mb-1">Nº da Proposta</label>
+                                <input type="text" id="orc-numero" oninput="updateOrcamentoPreview()" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-400 mb-1">Data de Emissão</label>
+                                <input type="date" id="orc-data" onchange="updateOrcamentoPreview()" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-400 mb-1">Validade (Dias)</label>
+                                <input type="number" id="orc-validade" value="15" oninput="updateOrcamentoPreview()" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-400 mb-1">Prazo de Execução</label>
+                                <input type="text" id="orc-prazo" oninput="updateOrcamentoPreview()" placeholder="Ex: 3 a 5 dias úteis" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                            </div>
+                        </div>
+
+                        <!-- Condição de Pagamento (Combobox) -->
+                        <div class="text-xs">
+                            <label class="block font-semibold text-slate-400 mb-1">Condição de Pagamento</label>
+                            <input type="text" id="orc-pagamento" list="list-pagamentos" oninput="updateOrcamentoPreview()" placeholder="Selecione ou digite..." class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+
+                        <!-- Status do Documento -->
+                        <div class="text-xs">
+                            <label class="block font-semibold text-slate-400 mb-1">Status da Proposta</label>
+                            <select id="orc-status" onchange="updateOrcamentoPreview()" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                                <option value="Aguardando Aprovação">🟡 Aguardando Aprovação</option>
+                                <option value="Aprovado pelo Cliente">🟢 Aprovado pelo Cliente</option>
+                                <option value="Em Andamento">🔵 Em Andamento</option>
+                                <option value="Concluído com Sucesso">🟣 Concluído com Sucesso</option>
+                                <option value="Cancelado">🔴 Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Financeiro, TRT e Impostos -->
+                    <div class="bg-flp-card p-5 rounded-xl border border-flp-border space-y-4">
+                        <h2 class="text-xs font-black text-flp-yellow uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="percent" class="w-4 h-4"></i> Ajustes Financeiros & TRT
+                        </h2>
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-400 mb-1">Desconto (%)</label>
+                                <input type="number" id="orc-desconto-porcent" min="0" max="100" step="0.5" value="0" oninput="calculateOrcamentoTotals()" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-400 mb-1">Impostos / NF (%)</label>
+                                <input type="number" id="orc-taxas-porcent" min="0" max="100" step="0.5" value="0" oninput="calculateOrcamentoTotals()" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-black/60 rounded-lg border border-flp-border text-xs">
+                            <span class="font-bold text-slate-200">Emitir TRT / Responsabilidade Técnica?</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="orc-trt-check" onchange="calculateOrcamentoTotals()" class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-flp-yellow"></div>
+                            </label>
+                        </div>
+                        <div id="orc-trt-valor-container" class="hidden text-xs">
+                            <label class="block font-semibold text-slate-400 mb-1">Taxa do TRT (R$)</label>
+                            <input type="number" id="orc-trt-valor" value="65.00" step="1" oninput="calculateOrcamentoTotals()" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Observações e Garantia -->
+                    <div class="bg-flp-card p-5 rounded-xl border border-flp-border space-y-3">
+                        <h2 class="text-xs font-black text-flp-yellow uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i> Garantia & Termos Técnicos
+                        </h2>
+                        <textarea id="orc-obs" rows="3" oninput="updateOrcamentoPreview()" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-xs text-white focus:border-flp-yellow focus:outline-none">Garantia legal sobre os serviços executados. Todos os serviços respeitam as normas de segurança vigentes e atribuições profissionais do responsável técnico.</textarea>
+                    </div>
+                </div>
+
+                <!-- Live Printable Canvas (Right) -->
+                <div class="lg:col-span-7">
+                    <div id="orcamento-document" class="print-area bg-white text-slate-900 p-8 rounded-xl shadow-2xl min-h-[842px] flex flex-col justify-between border border-slate-300">
+                        <div>
+                            <!-- Header do Documento FLP -->
+                            <div class="flex justify-between items-start border-b-4 border-black pb-5 print-header-bg p-4 rounded-t-lg bg-black text-white">
+                                <div class="space-y-1">
+                                    <div id="preview-orc-logo-box" class="mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-flp-yellow font-black text-3xl tracking-tighter">FLP</span>
+                                            <div class="h-8 w-1 bg-flp-yellow"></div>
+                                            <div>
+                                                <h2 class="text-xs font-black text-white uppercase tracking-wider leading-none">AUTOMAÇÃO E MANUTENÇÃO</h2>
+                                                <p class="text-[9px] text-flp-yellow font-bold tracking-widest mt-0.5">INDUSTRIAL</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p id="preview-emissor-nome-orc" class="text-xs font-bold text-slate-200 uppercase">FLP Automação e Manutenção Industrial</p>
+                                    <p id="preview-emissor-doc-orc" class="text-[11px] text-slate-300">CNPJ: 00.000.000/0001-00</p>
+                                    <p id="preview-emissor-contato-orc" class="text-[11px] text-slate-300">contato@flpautomacao.com.br | (11) 98765-4321</p>
+                                </div>
+                                <div class="text-right">
+                                    <span id="preview-orc-status-badge" class="inline-block px-3 py-1 bg-flp-yellow text-black text-xs font-extrabold rounded uppercase tracking-wider mb-2 print-badge-yellow shadow">
+                                        AGUARDANDO APROVAÇÃO
+                                    </span>
+                                    <h3 id="preview-orc-numero" class="text-lg font-black text-white">#FLP-2026-001</h3>
+                                    <p class="text-xs text-slate-300 mt-1">Data: <span id="preview-orc-data" class="font-bold text-white">--/--/----</span></p>
+                                    <p class="text-xs text-slate-300">Validade: <span id="preview-orc-validade" class="font-bold text-white">15</span> dias</p>
+                                </div>
+                            </div>
+
+                            <!-- Cliente Info Card -->
+                            <div class="my-5 p-4 bg-slate-100 rounded-lg border border-slate-300 print-card grid grid-cols-2 gap-4 text-xs">
+                                <div>
+                                    <p class="text-slate-500 uppercase font-bold text-[10px] tracking-wider">Cliente / Destinatário</p>
+                                    <p id="preview-cli-nome" class="text-sm font-extrabold text-slate-900 mt-0.5">Empresa Cliente S/A</p>
+                                    <p id="preview-cli-doc" class="text-slate-700 mt-0.5">CNPJ: 00.000.000/0001-00</p>
+                                </div>
+                                <div>
+                                    <p class="text-slate-500 uppercase font-bold text-[10px] tracking-wider">Localização & Contato</p>
+                                    <p id="preview-cli-cidade" class="text-slate-800 font-bold mt-0.5">Jundiaí - SP</p>
+                                    <p id="preview-cli-fone" class="text-slate-700 mt-0.5">Tel: (11) 98765-4321</p>
+                                </div>
+                            </div>
+
+                            <!-- Tabela de Itens Com Puxamento do Catálogo e Subtotal Editável -->
+                            <div class="my-6">
+                                <div class="flex justify-between items-center mb-3 no-print">
+                                    <h3 class="text-xs font-black text-slate-700 uppercase tracking-wider">Itens e Serviços da Proposta</h3>
+                                    <button onclick="addOrcamentoItem()" class="text-xs px-3 py-1.5 bg-black hover:bg-slate-800 text-flp-yellow border border-flp-yellow/30 rounded-md transition flex items-center gap-1 font-bold">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> Adicionar Item
+                                    </button>
+                                </div>
+
+                                <table class="w-full text-left text-xs print-table border-collapse">
+                                    <thead>
+                                        <tr class="bg-black text-flp-yellow font-bold">
+                                            <th class="p-2.5 w-5/12">Equipamento / Serviço (Catálogo)</th>
+                                            <th class="p-2.5 w-3/12">Marca / Obs</th>
+                                            <th class="p-2.5 text-center w-12">Qtd</th>
+                                            <th class="p-2.5 text-right w-20">Unit. (R$)</th>
+                                            <th class="p-2.5 text-right w-24">Subtotal (R$)</th>
+                                            <th class="p-2.5 text-center w-8 no-print"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="orc-items-tbody">
+                                        <!-- Renderizado via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Caixa de Cálculos -->
+                            <div class="flex justify-end my-6">
+                                <div class="w-full sm:w-72 space-y-1.5 text-xs text-right">
+                                    <div class="flex justify-between text-slate-700 py-0.5 border-b border-slate-200">
+                                        <span>Subtotal dos Itens:</span>
+                                        <span id="preview-orc-subtotal" class="font-bold text-slate-900">R$ 0,00</span>
+                                    </div>
+                                    <div id="preview-orc-desconto-row" class="flex justify-between text-emerald-700 py-0.5 border-b border-slate-200 hidden">
+                                        <span>Desconto Concedido:</span>
+                                        <span id="preview-orc-desconto-val">- R$ 0,00</span>
+                                    </div>
+                                    <div id="preview-orc-taxas-row" class="flex justify-between text-slate-700 py-0.5 border-b border-slate-200 hidden">
+                                        <span>Impostos de Nota:</span>
+                                        <span id="preview-orc-taxas-val">+ R$ 0,00</span>
+                                    </div>
+                                    <div id="preview-orc-trt-row" class="flex justify-between text-slate-700 py-0.5 border-b border-slate-200 hidden">
+                                        <span>Emissão TRT Responsabilidade:</span>
+                                        <span id="preview-orc-trt-val">+ R$ 0,00</span>
+                                    </div>
+                                    <div class="flex justify-between text-base font-black text-black pt-2 border-t-2 border-black">
+                                        <span>VALOR TOTAL LÍQUIDO:</span>
+                                        <span id="preview-orc-total" class="text-black bg-flp-yellow px-2 py-0.5 rounded font-black">R$ 0,00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Condições Comerciais -->
+                            <div class="grid grid-cols-2 gap-4 p-4 bg-slate-100 rounded-lg border border-slate-300 print-card text-xs mb-6">
+                                <div>
+                                    <p class="font-bold text-slate-900">Condições de Pagamento:</p>
+                                    <p id="preview-orc-pagamento" class="text-slate-700 mt-0.5">A combinar</p>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-900">Prazo de Execução:</p>
+                                    <p id="preview-orc-prazo" class="text-slate-700 mt-0.5">A combinar</p>
+                                </div>
+                            </div>
+
+                            <!-- Garantia e Obs -->
+                            <div id="preview-orc-obs-box" class="text-xs text-slate-700 space-y-1 border-t border-slate-300 pt-4">
+                                <p class="font-black text-slate-900 uppercase tracking-wider text-[10px]">Termos de Garantia & Validade:</p>
+                                <p id="preview-orc-obs" class="whitespace-pre-line text-slate-700 leading-relaxed"></p>
+                            </div>
+                        </div>
+
+                        <!-- Rodapé e Assinaturas -->
+                        <div class="mt-12 pt-6 border-t border-slate-300 text-center text-xs text-slate-600">
+                            <div class="grid grid-cols-2 gap-8 my-6 text-center">
+                                <div>
+                                    <div class="border-b border-slate-500 w-3/4 mx-auto mb-1"></div>
+                                    <p class="font-bold text-slate-900" id="preview-sig-emissor-nome">FLP Automação Industrial</p>
+                                    <p class="text-[10px] text-slate-500">Técnico em Mecatrônica / Responsável Técnico</p>
+                                </div>
+                                <div>
+                                    <div class="border-b border-slate-500 w-3/4 mx-auto mb-1"></div>
+                                    <p class="font-bold text-slate-900">De Acordo do Cliente</p>
+                                    <p class="text-[10px] text-slate-500">Aprovação da Proposta Comercial</p>
+                                </div>
+                            </div>
+                            <p class="text-[9px] text-slate-500 uppercase tracking-widest font-semibold">FLP Automação e Manutenção Industrial • Força • Lógica • Precisão</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: GERADOR DE RELATÓRIOS TÉCNICOS      -->
+        <!-- ========================================== -->
+        <section id="sec-relatorio" class="tab-content space-y-6 hidden">
+            <!-- Action Controls -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-flp-card p-4 rounded-xl border border-flp-border no-print">
+                <div>
+                    <h1 class="text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
+                        <i data-lucide="file-text" class="text-flp-yellow"></i> Relatório Técnico de Intervenção Industrial
+                    </h1>
+                    <p class="text-xs text-slate-400">Registre diagnósticos com fotos de intervenção e assinatura digital do técnico.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <button onclick="clearRelatorioForm()" class="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg text-xs font-bold transition flex items-center gap-1.5 border border-flp-border">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Limpar
+                    </button>
+                    <button onclick="saveRelatorio()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-emerald-900/20">
+                        <i data-lucide="save" class="w-4 h-4"></i> Salvar
+                    </button>
+                    <button onclick="sendRelatorioWhatsApp()" class="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-lg text-xs transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/20">
+                        <i data-lucide="message-square" class="w-4 h-4"></i> WhatsApp
+                    </button>
+                    <button onclick="printDocumentWithPDFName('relatorio')" class="px-4 py-2 bg-flp-yellow hover:bg-flp-yellowHover text-black rounded-lg text-xs font-black transition flex items-center gap-1.5 shadow-lg shadow-flp-yellow/20">
+                        <i data-lucide="printer" class="w-4 h-4"></i> Gerar PDF / Imprimir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Form & Live Canvas Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Form Inputs (Left) -->
+                <div class="lg:col-span-5 space-y-6 no-print">
+                    
+                    <!-- Identificação do Serviço -->
+                    <div class="bg-flp-card p-5 rounded-xl border border-flp-border space-y-4">
+                        <h2 class="text-xs font-black text-flp-yellow uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="file-badge" class="w-4 h-4"></i> Dados do Atendimento
+                        </h2>
+
+                        <!-- Busca de Cliente no CRM para Relatórios -->
+                        <div class="text-xs bg-black p-3 rounded-lg border border-flp-yellow/40 space-y-1">
+                            <label class="block font-bold text-flp-yellow">🔍 Puxar Cliente do CRM</label>
+                            <select id="rel-select-cliente" onchange="autoFillClienteRelatorio(this.value)" class="w-full bg-slate-900 border border-flp-border rounded-lg p-2 text-white focus:border-flp-yellow focus:outline-none">
+                                <option value="">-- Selecione um Cliente --</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-3 text-xs pt-1">
+                            <div>
+                                <label class="block font-semibold text-slate-400 mb-1">Título / Tipo da Intervenção *</label>
+                                <input type="text" id="rel-titulo" list="list-servicos-global" oninput="updateRelatorioPreview()" placeholder="Escolha ou digite..." class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-semibold text-slate-400 mb-1">Cliente / Planta</label>
+                                    <input type="text" id="rel-cliente" oninput="updateRelatorioPreview()" placeholder="Nome da empresa" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-400 mb-1">Data da Vistoria</label>
+                                    <input type="date" id="rel-data" onchange="updateRelatorioPreview()" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-semibold text-slate-400 mb-1">Equipamento / Linha</label>
+                                    <input type="text" id="rel-equipamento" list="list-equipamentos" oninput="updateRelatorioPreview()" placeholder="Equipamento..." class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-400 mb-1">Fabricante / Marca</label>
+                                    <input type="text" id="rel-marca" list="list-marcas" oninput="updateRelatorioPreview()" placeholder="WEG, Siemens..." class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-semibold text-slate-400 mb-1">Técnico Responsável</label>
+                                    <input type="text" id="rel-tecnico" oninput="updateRelatorioPreview()" placeholder="Técnico FLP" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-400 mb-1">Registro (CFT / TRT)</label>
+                                    <input type="text" id="rel-registro" oninput="updateRelatorioPreview()" placeholder="Reg. Profissional" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conteúdo do Relatório Técnico -->
+                    <div class="bg-flp-card p-5 rounded-xl border border-flp-border space-y-4">
+                        <h2 class="text-xs font-black text-flp-yellow uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="layers" class="w-4 h-4"></i> Corpo do Relatório
+                        </h2>
+                        <div class="space-y-4 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-400 mb-1">1. Diagnóstico Inicial & Avaria</label>
+                                <textarea id="rel-diagnostico" rows="3" oninput="updateRelatorioPreview()" placeholder="Análise de paradas de máquina, curtos-circuitos, alarmes em inversores ou falhas em comandos..." class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-400 mb-1">2. Causa Raiz & Solução Aplicada</label>
+                                <textarea id="rel-escopo" rows="3" oninput="updateRelatorioPreview()" placeholder="Ações executadas: parametrização, adequação de sensores, troca de contatores/relés..." class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-400 mb-1">3. Peças / Componentes Utilizados</label>
+                                <textarea id="rel-materiais" rows="2" oninput="updateRelatorioPreview()" placeholder="- 1x Inversor WEG CFW500&#10;- 1x Contator General K3" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-400 mb-1">4. Recomendações e Conclusão</label>
+                                <textarea id="rel-recomendacoes" rows="2" oninput="updateRelatorioPreview()" placeholder="Equipamento liberado para produção em teste de carga com melhoria na confiabilidade." class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload de Fotos -->
+                    <div class="bg-flp-card p-5 rounded-xl border border-flp-border space-y-3">
+                        <h2 class="text-xs font-black text-flp-yellow uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="camera" class="w-4 h-4"></i> Registros Fotográficos
+                        </h2>
+                        <input type="file" id="rel-photos-input" accept="image/*" multiple onchange="handlePhotoUpload(event)" class="hidden">
+                        <button onclick="document.getElementById('rel-photos-input').click()" class="w-full py-2.5 border-2 border-dashed border-flp-border hover:border-flp-yellow rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center gap-2 text-xs font-bold">
+                            <i data-lucide="upload-cloud" class="w-4 h-4 text-flp-yellow"></i> Anexar Fotos do Painel / Equipamento
+                        </button>
+                        <div id="rel-photos-thumbs" class="grid grid-cols-4 gap-2 pt-2"></div>
+                    </div>
+
+                    <!-- Assinatura Digital Canvas -->
+                    <div class="bg-flp-card p-5 rounded-xl border border-flp-border space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xs font-black text-flp-yellow uppercase tracking-wider flex items-center gap-2">
+                                <i data-lucide="pen-tool" class="w-4 h-4"></i> Assinatura Digital do Técnico
+                            </h2>
+                            <button onclick="clearSignaturePad()" class="text-xs text-rose-400 hover:underline">Limpar</button>
+                        </div>
+                        <div class="bg-white rounded-lg p-1 border border-slate-700">
+                            <canvas id="sig-canvas" class="w-full h-28 touch-none bg-slate-50 rounded"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Document (Right) -->
+                <div class="lg:col-span-7">
+                    <div id="relatorio-document" class="print-area bg-white text-slate-900 p-8 rounded-xl shadow-2xl min-h-[842px] flex flex-col justify-between border border-slate-300">
+                        <div>
+                            <!-- Header -->
+                            <div class="flex justify-between items-start border-b-4 border-black pb-5 print-header-bg p-4 rounded-t-lg bg-black text-white">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="text-flp-yellow font-black text-3xl tracking-tighter">FLP</span>
+                                        <div class="h-8 w-1 bg-flp-yellow"></div>
+                                        <div>
+                                            <h2 class="text-xs font-black text-white uppercase tracking-wider leading-none">AUTOMAÇÃO E MANUTENÇÃO</h2>
+                                            <p class="text-[9px] text-flp-yellow font-bold tracking-widest mt-0.5">INDUSTRIAL</p>
+                                        </div>
+                                    </div>
+                                    <p id="preview-rel-emissor-nome" class="text-xs font-bold text-slate-200">FLP Automação e Manutenção Industrial</p>
+                                    <p id="preview-rel-emissor-doc" class="text-[11px] text-slate-300">CNPJ: 00.000.000/0001-00</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-block px-3 py-1 bg-flp-yellow text-black text-xs font-extrabold rounded uppercase tracking-wider mb-2 print-badge-yellow shadow">
+                                        RELATÓRIO TÉCNICO
+                                    </span>
+                                    <p class="text-xs text-slate-300">Data: <span id="preview-rel-data" class="font-bold text-white">--/--/----</span></p>
+                                </div>
+                            </div>
+
+                            <!-- Document Meta Info -->
+                            <div class="my-5">
+                                <h1 id="preview-rel-titulo" class="text-base font-black text-black border-l-4 border-flp-yellow pl-3 py-1 uppercase tracking-wide">
+                                    MANUTENÇÃO PREVENTIVA E CORRETIVA
+                                </h1>
+
+                                <div class="grid grid-cols-2 gap-4 mt-4 p-4 bg-slate-100 rounded-lg border border-slate-300 text-xs print-card">
+                                    <div>
+                                        <p class="text-slate-500 uppercase font-bold text-[10px]">Cliente / Solicitante</p>
+                                        <p id="preview-rel-cli-nome" class="font-extrabold text-slate-900 mt-0.5">Cliente Não Especificado</p>
+                                        <p id="preview-rel-equip" class="text-slate-700 mt-1 font-semibold">Equipamento: -</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-slate-500 uppercase font-bold text-[10px]">Responsável Técnico FLP</p>
+                                        <p id="preview-rel-tec-nome" class="font-extrabold text-slate-900 mt-0.5">Técnico FLP</p>
+                                        <p id="preview-rel-tec-reg" class="text-slate-700 text-[11px]"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Relatorio Sections -->
+                            <div class="my-4 space-y-1">
+                                <h3 class="text-xs font-black text-black uppercase tracking-wider border-b-2 border-black pb-1">1. Diagnóstico Inicial & Análise de Falha</h3>
+                                <p id="preview-rel-diagnostico" class="text-xs text-slate-800 whitespace-pre-line leading-relaxed pt-1">Aguardando preenchimento...</p>
+                            </div>
+
+                            <div class="my-4 space-y-1">
+                                <h3 class="text-xs font-black text-black uppercase tracking-wider border-b-2 border-black pb-1">2. Escopo do Serviço & Solução Executada</h3>
+                                <p id="preview-rel-escopo" class="text-xs text-slate-800 whitespace-pre-line leading-relaxed pt-1">Aguardando preenchimento...</p>
+                            </div>
+
+                            <div class="my-4 space-y-1">
+                                <h3 class="text-xs font-black text-black uppercase tracking-wider border-b-2 border-black pb-1">3. Peças e Componentes Utilizados</h3>
+                                <p id="preview-rel-materiais" class="text-xs text-slate-800 whitespace-pre-line leading-relaxed pt-1">Nenhum componente registrado.</p>
+                            </div>
+
+                            <div class="my-4 space-y-1">
+                                <h3 class="text-xs font-black text-black uppercase tracking-wider border-b-2 border-black pb-1">4. Recomendações Técnicas e Conclusão</h3>
+                                <p id="preview-rel-recomendacoes" class="text-xs text-slate-800 whitespace-pre-line leading-relaxed pt-1">Equipamento liberado em condições normais de operação.</p>
+                            </div>
+
+                            <!-- Fotos Anexadas -->
+                            <div id="preview-rel-photos-container" class="my-6 hidden">
+                                <h3 class="text-xs font-black text-black uppercase tracking-wider border-b-2 border-black pb-1 mb-3">5. Registros Fotográficos da Intervenção</h3>
+                                <div id="preview-rel-photos-grid" class="grid grid-cols-2 gap-3"></div>
+                            </div>
+                        </div>
+
+                        <!-- Assinatura Técnico -->
+                        <div class="mt-12 pt-6 border-t border-slate-300">
+                            <div class="flex justify-center items-center my-4">
+                                <div class="text-center space-y-1">
+                                    <div class="h-16 flex items-end justify-center mb-1">
+                                        <img id="preview-rel-sig-img" src="" alt="Assinatura" class="max-h-16 hidden">
+                                    </div>
+                                    <div class="border-b border-slate-500 w-64 mx-auto"></div>
+                                    <p id="preview-rel-sig-nome" class="text-xs font-bold text-slate-900">Técnico FLP Responsável</p>
+                                    <p id="preview-rel-sig-reg" class="text-[10px] text-slate-500">CFT / Responsável Técnico</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: CADASTRO DE CLIENTES (CRM)          -->
+        <!-- ========================================== -->
+        <section id="sec-clientes" class="tab-content space-y-6 hidden no-print">
+            <div class="bg-flp-card p-6 rounded-xl border border-flp-border space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 class="text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
+                            <i data-lucide="users" class="text-flp-yellow"></i> Gestão de Clientes Industriais (CRM)
+                        </h1>
+                        <p class="text-xs text-slate-400">Cadastre empresas contratantes para auto-preencher orçamentos e relatórios em 1 clique.</p>
+                    </div>
+                    <div>
+                        <input type="text" id="cli-search-input" oninput="renderClientesList()" placeholder="Buscar empresa, CNPJ ou cidade..." class="bg-black border border-flp-border rounded-lg px-3 py-2 text-xs text-white focus:border-flp-yellow focus:outline-none w-64">
+                    </div>
+                </div>
+
+                <!-- Form Cadastro / Edição Cliente -->
+                <div class="bg-black p-5 rounded-xl border border-flp-border space-y-4 text-xs">
+                    <h2 id="cli-form-title" class="font-bold text-flp-yellow uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i> Adicionar Novo Cliente
+                    </h2>
+                    <input type="hidden" id="cli-edit-id">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2">
+                            <label class="block font-semibold text-slate-400 mb-1">Empresa / Razão Social *</label>
+                            <input type="text" id="cli-nome" placeholder="Ex: Indústria Plastmetal S.A." class="w-full bg-slate-900 border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">CNPJ / CPF *</label>
+                            <input type="text" id="cli-doc" placeholder="00.000.000/0001-00" class="w-full bg-slate-900 border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">Pessoa de Contato / Responsável</label>
+                            <input type="text" id="cli-resp" placeholder="Ex: Eng. Roberto Santos" class="w-full bg-slate-900 border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">Telefone / WhatsApp</label>
+                            <input type="text" id="cli-fone" placeholder="(11) 98765-4321" class="w-full bg-slate-900 border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">E-mail Comercial</label>
+                            <input type="email" id="cli-email" placeholder="compras@plastmetal.com.br" class="w-full bg-slate-900 border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block font-semibold text-slate-400 mb-1">Cidade / Planta Industrial</label>
+                            <input type="text" id="cli-cidade" placeholder="Jundiaí" class="w-full bg-slate-900 border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">Estado (UF)</label>
+                            <input type="text" id="cli-uf" placeholder="SP" maxlength="2" class="w-full bg-slate-900 border border-flp-border rounded-lg p-2.5 text-white uppercase focus:border-flp-yellow focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button onclick="clearClienteForm()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-bold">Cancelar</button>
+                        <button onclick="saveCliente()" class="px-5 py-2 bg-flp-yellow hover:bg-flp-yellowHover text-black rounded-lg font-black flex items-center gap-1.5 shadow-lg shadow-flp-yellow/20">
+                            <i data-lucide="check" class="w-4 h-4"></i> Salvar Cliente
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabela de Clientes Cadastrados -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-black text-flp-yellow uppercase font-bold text-[10px]">
+                            <tr>
+                                <th class="p-3">Empresa</th>
+                                <th class="p-3">CNPJ / CPF</th>
+                                <th class="p-3">Contato</th>
+                                <th class="p-3">Cidade/UF</th>
+                                <th class="p-3 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cli-tbody" class="divide-y divide-flp-border">
+                            <!-- Renderizado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: CATÁLOGO DE SERVIÇOS E PREÇOS       -->
+        <!-- ========================================== -->
+        <section id="sec-catalogo" class="tab-content space-y-6 hidden no-print">
+            <div class="bg-flp-card p-6 rounded-xl border border-flp-border space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 class="text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
+                            <i data-lucide="tag" class="text-flp-yellow"></i> Tabela de Preços & Catálogo de Serviços
+                        </h1>
+                        <p class="text-xs text-slate-400">Cadastre serviços e componentes com preços padrão. Ao selecioná-los no orçamento, o valor é preenchido automaticamente.</p>
+                    </div>
+                    <div>
+                        <input type="text" id="cat-search-input" oninput="renderCatalogoList()" placeholder="Buscar no catálogo..." class="bg-black border border-flp-border rounded-lg px-3 py-2 text-xs text-white focus:border-flp-yellow focus:outline-none w-64">
+                    </div>
+                </div>
+
+                <!-- Form Cadastro Catálogo -->
+                <div class="bg-black p-5 rounded-xl border border-flp-border space-y-4 text-xs">
+                    <h2 id="cat-form-title" class="font-bold text-flp-yellow uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> Adicionar Item / Serviço ao Catálogo
+                    </h2>
+                    <input type="hidden" id="cat-edit-id">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div class="sm:col-span-2">
+                            <label class="block font-semibold text-slate-400 mb-1">Descrição do Serviço / Item *</label>
+                            <input type="text" id="cat-desc" placeholder="Ex: Hora Técnica de Automação / Parametrização" class="w-full bg-slate-900 border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">Marca / Referência Padrão</label>
+                            <input type="text" id="cat-marca" list="list-marcas" placeholder="WEG / Siemens..." class="w-full bg-slate-900 border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">Preço Base Padrão (R$) *</label>
+                            <input type="number" step="0.01" id="cat-preco" placeholder="180.00" class="w-full bg-slate-900 border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button onclick="clearCatalogoForm()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-bold">Cancelar</button>
+                        <button onclick="saveCatalogoItem()" class="px-5 py-2 bg-flp-yellow hover:bg-flp-yellowHover text-black rounded-lg font-black flex items-center gap-1.5 shadow-lg shadow-flp-yellow/20">
+                            <i data-lucide="check" class="w-4 h-4"></i> Salvar no Catálogo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabela de Itens do Catálogo -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-black text-flp-yellow uppercase font-bold text-[10px]">
+                            <tr>
+                                <th class="p-3">Descrição do Serviço / Item</th>
+                                <th class="p-3">Marca / Ref</th>
+                                <th class="p-3 text-right">Valor Padrão (R$)</th>
+                                <th class="p-3 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cat-tbody" class="divide-y divide-flp-border">
+                            <!-- Renderizado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: HISTÓRICO DE DOCUMENTOS            -->
+        <!-- ========================================== -->
+        <section id="sec-historico" class="tab-content space-y-6 hidden no-print">
+            <div class="bg-flp-card p-6 rounded-xl border border-flp-border space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 class="text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
+                            <i data-lucide="folder-open" class="text-flp-yellow"></i> Histórico de Documentos FLP
+                        </h1>
+                        <p class="text-xs text-slate-400">Consulte, reabra para edição ou exclua orçamentos e relatórios anteriores.</p>
+                    </div>
+                    <div>
+                        <input type="text" id="history-search" oninput="renderHistoryList()" placeholder="Buscar cliente, número ou tipo..." class="bg-black border border-flp-border rounded-lg px-3 py-2 text-xs text-white focus:border-flp-yellow focus:outline-none w-64">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-black text-flp-yellow uppercase tracking-wider font-bold text-[10px]">
+                            <tr>
+                                <th class="p-3">Tipo</th>
+                                <th class="p-3">Código</th>
+                                <th class="p-3">Cliente</th>
+                                <th class="p-3">Data</th>
+                                <th class="p-3">Valor / Título</th>
+                                <th class="p-3 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody" class="divide-y divide-flp-border">
+                            <!-- Renderizado via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 6: CONFIGURAÇÕES DA EMPRESA (EMISSOR)  -->
+        <!-- ========================================== -->
+        <section id="sec-emissor" class="tab-content space-y-6 hidden no-print">
+            <div class="max-w-3xl mx-auto bg-flp-card p-6 rounded-xl border border-flp-border space-y-6">
+                <div>
+                    <h1 class="text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
+                        <i data-lucide="building" class="text-flp-yellow"></i> Perfil da Empresa Emissora
+                    </h1>
+                    <p class="text-xs text-slate-400">Configure os dados oficiais e faça o upload do seu logotipo para sair nos PDFs.</p>
+                </div>
+
+                <div class="space-y-4 text-xs">
+                    <div>
+                        <label class="block font-semibold text-slate-400 mb-2">Logotipo do Sistema & Impressão</label>
+                        <div class="flex items-center gap-4 p-4 bg-black rounded-lg border border-flp-border">
+                            <div id="emissor-logo-preview-box" class="w-24 h-24 bg-flp-card border border-flp-border rounded-lg flex items-center justify-center p-2 overflow-hidden">
+                                <span class="text-flp-yellow font-black text-2xl">FLP</span>
+                            </div>
+                            <div class="space-y-2">
+                                <input type="file" id="emissor-logo-input" accept="image/*" onchange="handleLogoUpload(event)" class="hidden">
+                                <button onclick="document.getElementById('emissor-logo-input').click()" class="px-4 py-2 bg-flp-yellow hover:bg-flp-yellowHover text-black rounded-lg text-xs font-black transition flex items-center gap-2">
+                                    <i data-lucide="upload" class="w-4 h-4"></i> Enviar Logotipo
+                                </button>
+                                <p class="text-[11px] text-slate-400">Selecione a imagem do logotipo da FLP. Ela será salva e exibida em todos os relatórios e propostas.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="sm:col-span-2">
+                            <label class="block font-semibold text-slate-400 mb-1">Razão Social / Nome Fantasia *</label>
+                            <input type="text" id="emissor-nome" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">CNPJ *</label>
+                            <input type="text" id="emissor-doc" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-400 mb-1">Telefone / WhatsApp Comercial</label>
+                            <input type="text" id="emissor-fone" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block font-semibold text-slate-400 mb-1">E-mail Comercial</label>
+                            <input type="email" id="emissor-email" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block font-semibold text-slate-400 mb-1">Endereço da Sede</label>
+                            <input type="text" id="emissor-endereco" class="w-full bg-black border border-flp-border rounded-lg p-2.5 text-white focus:border-flp-yellow focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex justify-end">
+                        <button onclick="saveEmissorProfile()" class="px-5 py-2.5 bg-flp-yellow hover:bg-flp-yellowHover text-black font-black rounded-lg text-xs transition flex items-center gap-2 shadow-lg shadow-flp-yellow/20">
+                            <i data-lucide="check" class="w-4 h-4"></i> Salvar Dados da Empresa
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-flp-card border-t border-flp-border py-4 text-center text-xs text-slate-500 no-print mt-auto">
+        <p class="font-bold text-slate-400">FLP - Automação e Manutenção Industrial • Soluções Elétricas de Alta Precisão</p>
+    </footer>
+
+    <!-- Application Logic Script -->
+    <script>
+        // State Management Completo
+        let appState = {
+            emissor: {
+                nome: 'FLP Automação e Manutenção Industrial',
+                doc: '34.567.890/0001-12',
+                fone: '(11) 98765-4321',
+                email: 'contato@flpautomacao.com.br',
+                endereco: 'Atendimento Industrial Região & SP',
+                logo: ''
+            },
+            clientes: [
+                { id: 1, nome: 'Indústria Plastmetal S.A.', doc: '12.345.678/0001-90', resp: 'Eng. Roberto Santos', fone: '(11) 99887-1122', email: 'compras@plastmetal.com.br', cidade: 'Jundiaí', uf: 'SP' },
+                { id: 2, nome: 'Metalúrgica Alvorada Ltda', doc: '98.765.432/0001-10', resp: 'Marcos Oliveira', fone: '(11) 97766-5544', email: 'manutencao@alvorada.ind.br', cidade: 'Campinas', uf: 'SP' }
+            ],
+            catalogo: [
+                { id: 1, desc: 'Hora Técnica de Automação / Programação CLP', marca: 'Siemens / WEG', preco: 180.00 },
+                { id: 2, desc: 'Parametrização de Inversor de Frequência', marca: 'WEG / Danfoss', preco: 350.00 },
+                { id: 3, desc: 'Montagem de Painel de Comandos Elétricos', marca: 'Schneider Electric', preco: 1400.00 },
+                { id: 4, desc: 'Diagnóstico de Falhas Elétricas e Curto-Circuito', marca: 'FLP Especializada', preco: 280.00 },
+                { id: 5, desc: 'Emissão de TRT / Responsabilidade Técnica (SINCET)', marca: 'CFT / TRT', preco: 65.00 }
+            ],
+            orcamentoItems: [
+                { id: 1, desc: 'Parametrização de Inversor de Frequência', marca: 'WEG / Danfoss', qtd: 1, valor: 350.00, subtotal: 350.00 },
+                { id: 2, desc: 'Montagem de Painel de Comandos Elétricos', marca: 'Schneider Electric', qtd: 1, valor: 1400.00, subtotal: 1400.00 }
+            ],
+            relatorioPhotos: [],
+            signaturePad: null,
+            documentsHistory: [],
+            agenda: [
+                { id: 1, cliente: 'Indústria Plastmetal', data: '2026-11-05', desc: 'Preventiva Inversores' },
+                { id: 2, cliente: 'Silo Agro', data: '2026-11-10', desc: 'Adequação de Painel' }
+            ],
+            todoList: [
+                { id: 1, text: 'Comprar borne mola 2.5mm²', done: false },
+                { id: 2, text: 'Verificar cabo de comunicação CLP S7', done: true }
+            ]
+        };
+
+        window.onload = function () {
+            lucide.createIcons();
+            initSignaturePad();
+            loadFromLocalStorage();
+
+            // Default dates & sequence code
+            document.getElementById('orc-data').valueAsDate = new Date();
+            document.getElementById('rel-data').valueAsDate = new Date();
+            document.getElementById('orc-numero').value = 'FLP-' + new Date().getFullYear() + '-' + Math.floor(100 + Math.random() * 900);
+
+            syncEmissorUI();
+            updateDatalists();
+            renderClientesDropdowns();
+            renderClientesList();
+            renderCatalogoList();
+            renderOrcamentoItems();
+            updateOrcamentoPreview();
+            updateRelatorioPreview();
+            renderHistoryList();
+            updateDashboardMetrics();
+            calcularMotorTrifasico();
+            renderAgendaList();
+            renderTodoList();
+        };
+
+        // Navigation
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(el => {
+                el.classList.remove('bg-flp-yellow', 'text-black', 'shadow-lg');
+                el.classList.add('text-slate-300', 'hover:text-flp-yellow', 'hover:bg-slate-800');
+            });
+
+            const targetSec = document.getElementById('sec-' + tabName);
+            const targetBtn = document.getElementById('tab-' + tabName);
+
+            if (targetSec) targetSec.classList.remove('hidden');
+            if (targetBtn) {
+                targetBtn.classList.add('bg-flp-yellow', 'text-black', 'shadow-lg');
+                targetBtn.classList.remove('text-slate-300', 'hover:bg-slate-800');
+            }
+
+            if (tabName === 'relatorio' && appState.signaturePad) {
+                setTimeout(resizeCanvas, 100);
+            }
+
+            if (tabName === 'dashboard') {
+                updateDashboardMetrics();
+            }
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        // Persistence
+        function saveToLocalStorage() {
+            localStorage.setItem('flp_app_state', JSON.stringify({
+                emissor: appState.emissor,
+                clientes: appState.clientes,
+                catalogo: appState.catalogo,
+                documentsHistory: appState.documentsHistory,
+                agenda: appState.agenda,
+                todoList: appState.todoList
+            }));
+            updateDatalists();
+            renderClientesDropdowns();
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('flp_app_state');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.emissor) appState.emissor = parsed.emissor;
+                    if (parsed.clientes) appState.clientes = parsed.clientes;
+                    if (parsed.catalogo) appState.catalogo = parsed.catalogo;
+                    if (parsed.documentsHistory) appState.documentsHistory = parsed.documentsHistory;
+                    if (parsed.agenda) appState.agenda = parsed.agenda;
+                    if (parsed.todoList) appState.todoList = parsed.todoList;
+                } catch (e) {
+                    console.error("Erro ao ler localStorage", e);
+                }
+            }
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `bg-flp-yellow text-black font-black px-4 py-3 rounded-lg shadow-2xl text-xs transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 pointer-events-auto border border-black`;
+            toast.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> ${message}`;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function updateDatalists() {
+            const listServicos = document.getElementById('list-servicos-global');
+            listServicos.innerHTML = '';
+            appState.catalogo.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.desc;
+                listServicos.appendChild(opt);
+            });
+        }
+
+        function renderClientesDropdowns() {
+            const selectOrc = document.getElementById('orc-select-cliente');
+            const selectRel = document.getElementById('rel-select-cliente');
+            
+            const optionsHtml = '<option value="">-- Selecione um Cliente Cadastrado --</option>' + 
+                appState.clientes.map(c => `<option value="${c.id}">${c.nome} (${c.cidade}/${c.uf})</option>`).join('');
+            
+            selectOrc.innerHTML = optionsHtml;
+            selectRel.innerHTML = optionsHtml;
+        }
+
+        function autoFillClienteOrcamento(clienteId) {
+            if (!clienteId) return;
+            const c = appState.clientes.find(cli => cli.id == clienteId);
+            if (c) {
+                document.getElementById('orc-cliente-nome').value = c.nome;
+                document.getElementById('orc-cliente-doc').value = c.doc;
+                document.getElementById('orc-cliente-fone').value = c.fone;
+                document.getElementById('orc-cliente-cidade').value = c.cidade;
+                document.getElementById('orc-cliente-uf').value = c.uf;
+                updateOrcamentoPreview();
+                showToast(`Dados de ${c.nome} preenchidos!`);
+            }
+        }
+
+        function autoFillClienteRelatorio(clienteId) {
+            if (!clienteId) return;
+            const c = appState.clientes.find(cli => cli.id == clienteId);
+            if (c) {
+                document.getElementById('rel-cliente').value = c.nome;
+                updateRelatorioPreview();
+                showToast(`Cliente ${c.nome} vinculado ao relatório!`);
+            }
+        }
+
+        // ==========================================
+        // LÓGICA ATUALIZADA DO DASHBOARD & KPIS
+        // ==========================================
+        function updateDashboardMetrics() {
+            let totalMes = 0;
+            let aguardando = 0;
+            let aprovados = 0;
+            let relatorios = 0;
+            let totalPropostasCount = 0;
+            let vencidasCount = 0;
+            let totalTrtsCount = 0;
+
+            const servicosCount = {};
+            const marcasCount = {};
+            const garantias = [];
+
+            const hoje = new Date();
+
+            appState.documentsHistory.forEach(doc => {
+                if (doc.tipo === 'ORÇAMENTO') {
+                    totalPropostasCount++;
+                    const rawVal = doc.valor.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+                    const numVal = parseFloat(rawVal) || 0;
+                    totalMes += numVal;
+
+                    const status = doc.payload ? doc.payload.status : '';
+                    if (status.includes('Aguardando')) aguardando++;
+                    if (status.includes('Aprovado') || status.includes('Concluído')) aprovados++;
+
+                    // Verificar validade/vencimento (> 15 dias)
+                    if (doc.data) {
+                        const dataDoc = new Date(doc.data + 'T00:00:00');
+                        const diffDias = Math.floor((hoje - dataDoc) / (1000 * 60 * 60 * 24));
+                        if (diffDias > 15 && status.includes('Aguardando')) {
+                            vencidasCount++;
+                        }
+                    }
+
+                    // TRT check
+                    if (doc.payload && doc.payload.trtCheck) {
+                        totalTrtsCount++;
+                    }
+
+                    // Mapeamento de itens para ranking
+                    if (doc.payload && doc.payload.items) {
+                        doc.payload.items.forEach(it => {
+                            if (it.desc) servicosCount[it.desc] = (servicosCount[it.desc] || 0) + 1;
+                            if (it.marca) marcasCount[it.marca] = (marcasCount[it.marca] || 0) + 1;
+                        });
+                    }
+                } else if (doc.tipo === 'RELATÓRIO') {
+                    relatorios++;
+                    if (doc.data) {
+                        const dtServico = new Date(doc.data + 'T00:00:00');
+                        const dtTermino = new Date(dtServico);
+                        dtTermino.setDate(dtTermino.getDate() + 90);
+
+                        if (dtTermino >= hoje) {
+                            garantias.push({
+                                cliente: doc.cliente,
+                                equip: (doc.payload ? doc.payload.equipamento : '-') || 'Equipamento',
+                                dtServico: dtServico.toLocaleDateString('pt-BR'),
+                                dtTermino: dtTermino.toLocaleDateString('pt-BR')
+                            });
+                        }
+                    }
+                }
+            });
+
+            // Atribuição aos Cards
+            document.getElementById('dash-total-valor').innerText = 'R$ ' + totalMes.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('dash-qtd-aguardando').innerText = aguardando;
+            document.getElementById('dash-qtd-aprovados').innerText = aprovados;
+            document.getElementById('dash-qtd-relatorios').innerText = relatorios;
+
+            // KPIs Adicionados
+            const taxaConv = totalPropostasCount > 0 ? Math.round((aprovados / totalPropostasCount) * 100) : 0;
+            const ticketMedio = totalPropostasCount > 0 ? (totalMes / totalPropostasCount) : 0;
+
+            document.getElementById('dash-taxa-conversao').innerText = taxaConv + '%';
+            document.getElementById('dash-ticket-medio').innerText = 'R$ ' + ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('dash-propostas-vencidas').innerText = vencidasCount;
+
+            document.getElementById('dash-trt-badge').innerText = totalTrtsCount + ' TRTs Emitidos';
+
+            // Render Ranking de Serviços
+            const rankingContainer = document.getElementById('dash-ranking-servicos');
+            rankingContainer.innerHTML = '';
+            const sortedServicos = Object.entries(servicosCount).sort((a, b) => b[1] - a[1]).slice(0, 4);
+
+            if (sortedServicos.length === 0) {
+                rankingContainer.innerHTML = '<p class="text-slate-500 text-[11px]">Nenhum serviço registrado ainda.</p>';
+            } else {
+                sortedServicos.forEach(([srv, count], idx) => {
+                    rankingContainer.innerHTML += `
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-[11px]">
+                                <span class="font-bold text-slate-200">${idx + 1}. ${srv}</span>
+                                <span class="text-flp-yellow font-black">${count}x</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-flp-yellow h-full rounded-full" style="width: ${Math.min(count * 25, 100)}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Render Marcas
+            const marcasList = document.getElementById('dash-marcas-list');
+            marcasList.innerHTML = '';
+            Object.keys(marcasCount).forEach(m => {
+                marcasList.innerHTML += `<span class="px-2 py-1 bg-black border border-flp-border rounded text-slate-300 font-semibold">${m}</span>`;
+            });
+            if (Object.keys(marcasCount).length === 0) {
+                marcasList.innerHTML = '<span class="text-slate-500">WEG • Siemens • Danfoss</span>';
+            }
+
+            // Render Tabela Garantias
+            const tbodyGarantias = document.getElementById('dash-garantias-tbody');
+            tbodyGarantias.innerHTML = '';
+            if (garantias.length === 0) {
+                tbodyGarantias.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-slate-500">Nenhum serviço em período de garantia ativa (90 dias).</td></tr>';
+            } else {
+                garantias.forEach(g => {
+                    tbodyGarantias.innerHTML += `
+                        <tr class="border-b border-flp-border hover:bg-slate-800/40">
+                            <td class="p-2.5 font-bold text-white">${g.cliente}</td>
+                            <td class="p-2.5 text-slate-300">${g.equip}</td>
+                            <td class="p-2.5 text-slate-400">${g.dtServico}</td>
+                            <td class="p-2.5 text-right font-bold text-emerald-400">${g.dtTermino}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // Render Recent List
+            const tbodyRecent = document.getElementById('dash-recent-tbody');
+            tbodyRecent.innerHTML = '';
+
+            if (appState.documentsHistory.length === 0) {
+                tbodyRecent.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum documento emitido até o momento.</td></tr>`;
+            } else {
+                appState.documentsHistory.slice(0, 5).forEach(doc => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-800/40 transition border-b border-flp-border';
+                    const isOrc = doc.tipo === 'ORÇAMENTO';
+
+                    tr.innerHTML = `
+                        <td class="p-2.5">
+                            <span class="px-2 py-0.5 rounded text-[9px] font-black border ${isOrc ? 'bg-flp-yellow/20 text-flp-yellow border-flp-yellow/40' : 'bg-purple-500/20 text-purple-400 border-purple-500/40'}">${doc.tipo}</span>
+                        </td>
+                        <td class="p-2.5 font-bold text-white">${doc.codigo}</td>
+                        <td class="p-2.5 text-slate-200">${doc.cliente}</td>
+                        <td class="p-2.5 font-bold text-flp-yellow">${doc.valor}</td>
+                        <td class="p-2.5 text-right">
+                            <button onclick="loadDocumentFromHistory(${doc.id})" class="p-1 text-flp-yellow hover:underline font-bold">Abrir</button>
+                        </td>
+                    `;
+                    tbodyRecent.appendChild(tr);
+                });
+            }
+        }
+
+        // CALCULADORA ELÉTRICA RÁPIDA DE MOTORES
+        function calcularMotorTrifasico() {
+            const cv = parseFloat(document.getElementById('calc-cv').value) || 0;
+            const volts = parseInt(document.getElementById('calc-volts').value) || 380;
+
+            const kw = cv * 0.736;
+            let corrente = 0;
+
+            if (volts === 220) corrente = cv * 3.0;
+            else if (volts === 380) corrente = cv * 1.52;
+            else if (volts === 440) corrente = cv * 1.3;
+
+            document.getElementById('calc-corrente').innerText = corrente.toFixed(1) + ' A';
+
+            // Faixa Disjuntor
+            const disjMin = (corrente * 0.9).toFixed(1);
+            const disjMax = (corrente * 1.25).toFixed(1);
+            document.getElementById('calc-disjuntor').innerText = `${disjMin} - ${disjMax}A`;
+
+            // Contator
+            if (corrente <= 9) document.getElementById('calc-contator').innerText = 'K3 / CWM9 (9A)';
+            else if (corrente <= 12) document.getElementById('calc-contator').innerText = 'K3 / CWM12 (12A)';
+            else if (corrente <= 18) document.getElementById('calc-contator').innerText = 'K3 / CWM18 (18A)';
+            else if (corrente <= 25) document.getElementById('calc-contator').innerText = 'K3 / CWM25 (25A)';
+            else document.getElementById('calc-contator').innerText = 'K3 / CWM32+ (>32A)';
+        }
+
+        // AGENDA E PARADAS
+        function renderAgendaList() {
+            const container = document.getElementById('dash-agenda-list');
+            container.innerHTML = '';
+            if (appState.agenda.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 text-[11px]">Nenhuma manutenção agendada.</p>';
+                return;
+            }
+            appState.agenda.forEach(item => {
+                container.innerHTML += `
+                    <div class="p-2 bg-black border border-flp-border rounded flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-white">${item.cliente}</p>
+                            <p class="text-[10px] text-slate-400">${item.desc}</p>
+                        </div>
+                        <span class="text-[10px] bg-flp-yellow/20 text-flp-yellow font-bold px-2 py-0.5 rounded border border-flp-yellow/30">${item.data}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function addAgendaItemPrompt() {
+            const cli = prompt("Nome do Cliente:");
+            const data = prompt("Data da Parada (AAAA-MM-DD):");
+            const desc = prompt("Descrição do Serviço:");
+            if (cli && data) {
+                appState.agenda.push({ id: Date.now(), cliente: cli, data: data, desc: desc || 'Manutenção' });
+                saveToLocalStorage();
+                renderAgendaList();
+                showToast('Agendamento salvo!');
+            }
+        }
+
+        // BLOCO DE PENDÊNCIAS (TO-DO LIST)
+        function renderTodoList() {
+            const ul = document.getElementById('todo-list');
+            ul.innerHTML = '';
+            appState.todoList.forEach(t => {
+                ul.innerHTML += `
+                    <li class="flex items-center justify-between p-1 bg-slate-900 rounded border border-flp-border">
+                        <span class="${t.done ? 'line-through text-slate-500' : 'text-slate-200'} cursor-pointer" onclick="toggleTodo(${t.id})">${t.text}</span>
+                        <button onclick="deleteTodo(${t.id})" class="text-rose-500 hover:text-rose-400 text-[10px] font-bold">✕</button>
+                    </li>
+                `;
+            });
+        }
+
+        function addTodoItem() {
+            const input = document.getElementById('todo-input');
+            const txt = input.value.trim();
+            if (txt) {
+                appState.todoList.push({ id: Date.now(), text: txt, done: false });
+                input.value = '';
+                saveToLocalStorage();
+                renderTodoList();
+            }
+        }
+
+        function toggleTodo(id) {
+            const item = appState.todoList.find(t => t.id === id);
+            if (item) item.done = !item.done;
+            saveToLocalStorage();
+            renderTodoList();
+        }
+
+        function deleteTodo(id) {
+            appState.todoList = appState.todoList.filter(t => t.id !== id);
+            saveToLocalStorage();
+            renderTodoList();
+        }
+
+        // TAB 3: CRM Clientes
+        function renderClientesList() {
+            const tbody = document.getElementById('cli-tbody');
+            const search = (document.getElementById('cli-search-input').value || '').toLowerCase();
+            tbody.innerHTML = '';
+
+            const filtered = appState.clientes.filter(c => 
+                c.nome.toLowerCase().includes(search) || 
+                c.doc.toLowerCase().includes(search) || 
+                c.cidade.toLowerCase().includes(search)
+            );
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Nenhum cliente cadastrado.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/40 transition border-b border-flp-border';
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-white">${c.nome}</td>
+                    <td class="p-3 text-slate-300">${c.doc}</td>
+                    <td class="p-3 text-slate-300">${c.resp || '-'} (${c.fone || '-'})</td>
+                    <td class="p-3 text-slate-400">${c.cidade} / ${c.uf}</td>
+                    <td class="p-3 text-right space-x-2">
+                        <button onclick="editCliente(${c.id})" class="p-1.5 bg-black hover:bg-slate-800 text-flp-yellow rounded transition border border-flp-border" title="Editar">
+                            <i data-lucide="edit" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="deleteCliente(${c.id})" class="p-1.5 bg-black hover:bg-slate-800 text-rose-500 rounded transition border border-flp-border" title="Excluir">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            lucide.createIcons();
+        }
+
+        function saveCliente() {
+            const nome = document.getElementById('cli-nome').value.trim();
+            const doc = document.getElementById('cli-doc').value.trim();
+            if (!nome || !doc) {
+                showToast('Preencha a Razão Social e o CNPJ do cliente!');
+                return;
+            }
+
+            const editId = document.getElementById('cli-edit-id').value;
+            const cliData = {
+                id: editId ? parseInt(editId) : Date.now(),
+                nome: nome,
+                doc: doc,
+                resp: document.getElementById('cli-resp').value.trim(),
+                fone: document.getElementById('cli-fone').value.trim(),
+                email: document.getElementById('cli-email').value.trim(),
+                cidade: document.getElementById('cli-cidade').value.trim(),
+                uf: document.getElementById('cli-uf').value.trim().toUpperCase()
+            };
+
+            if (editId) {
+                const idx = appState.clientes.findIndex(c => c.id == editId);
+                if (idx !== -1) appState.clientes[idx] = cliData;
+            } else {
+                appState.clientes.push(cliData);
+            }
+
+            saveToLocalStorage();
+            renderClientesList();
+            clearClienteForm();
+            showToast('Cliente salvo no CRM com sucesso!');
+        }
+
+        function editCliente(id) {
+            const c = appState.clientes.find(cli => cli.id == id);
+            if (!c) return;
+            document.getElementById('cli-edit-id').value = c.id;
+            document.getElementById('cli-nome').value = c.nome;
+            document.getElementById('cli-doc').value = c.doc;
+            document.getElementById('cli-resp').value = c.resp || '';
+            document.getElementById('cli-fone').value = c.fone || '';
+            document.getElementById('cli-email').value = c.email || '';
+            document.getElementById('cli-cidade').value = c.cidade || '';
+            document.getElementById('cli-uf').value = c.uf || '';
+            document.getElementById('cli-form-title').innerText = '✏️ Editar Cliente Cadastrado';
+        }
+
+        function deleteCliente(id) {
+            appState.clientes = appState.clientes.filter(c => c.id != id);
+            saveToLocalStorage();
+            renderClientesList();
+            showToast('Cliente removido.');
+        }
+
+        function clearClienteForm() {
+            document.getElementById('cli-edit-id').value = '';
+            document.getElementById('cli-nome').value = '';
+            document.getElementById('cli-doc').value = '';
+            document.getElementById('cli-resp').value = '';
+            document.getElementById('cli-fone').value = '';
+            document.getElementById('cli-email').value = '';
+            document.getElementById('cli-cidade').value = '';
+            document.getElementById('cli-uf').value = '';
+            document.getElementById('cli-form-title').innerText = '➕ Adicionar Novo Cliente';
+        }
+
+        // TAB 4: Catálogo de Serviços & Preços
+        function renderCatalogoList() {
+            const tbody = document.getElementById('cat-tbody');
+            const search = (document.getElementById('cat-search-input').value || '').toLowerCase();
+            tbody.innerHTML = '';
+
+            const filtered = appState.catalogo.filter(c => 
+                c.desc.toLowerCase().includes(search) || 
+                (c.marca && c.marca.toLowerCase().includes(search))
+            );
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-500">Nenhum item cadastrado no catálogo.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/40 transition border-b border-flp-border';
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-white">${c.desc}</td>
+                    <td class="p-3 text-slate-300">${c.marca || '-'}</td>
+                    <td class="p-3 text-right font-black text-flp-yellow">R$ ${parseFloat(c.preco).toFixed(2)}</td>
+                    <td class="p-3 text-right space-x-2">
+                        <button onclick="editCatalogoItem(${c.id})" class="p-1.5 bg-black hover:bg-slate-800 text-flp-yellow rounded transition border border-flp-border" title="Editar">
+                            <i data-lucide="edit" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="deleteCatalogoItem(${c.id})" class="p-1.5 bg-black hover:bg-slate-800 text-rose-500 rounded transition border border-flp-border" title="Excluir">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            lucide.createIcons();
+        }
+
+        function saveCatalogoItem() {
+            const desc = document.getElementById('cat-desc').value.trim();
+            const preco = parseFloat(document.getElementById('cat-preco').value) || 0;
+            if (!desc) {
+                showToast('Preencha a descrição do item!');
+                return;
+            }
+
+            const editId = document.getElementById('cat-edit-id').value;
+            const catData = {
+                id: editId ? parseInt(editId) : Date.now(),
+                desc: desc,
+                marca: document.getElementById('cat-marca').value.trim(),
+                preco: preco
+            };
+
+            if (editId) {
+                const idx = appState.catalogo.findIndex(c => c.id == editId);
+                if (idx !== -1) appState.catalogo[idx] = catData;
+            } else {
+                appState.catalogo.push(catData);
+            }
+
+            saveToLocalStorage();
+            renderCatalogoList();
+            renderOrcamentoItems();
+            clearCatalogoForm();
+            showToast('Item salvo na tabela de preços!');
+        }
+
+        function editCatalogoItem(id) {
+            const c = appState.catalogo.find(cat => cat.id == id);
+            if (!c) return;
+            document.getElementById('cat-edit-id').value = c.id;
+            document.getElementById('cat-desc').value = c.desc;
+            document.getElementById('cat-marca').value = c.marca || '';
+            document.getElementById('cat-preco').value = c.preco;
+            document.getElementById('cat-form-title').innerText = '✏️ Editar Item do Catálogo';
+        }
+
+        function deleteCatalogoItem(id) {
+            appState.catalogo = appState.catalogo.filter(c => c.id != id);
+            saveToLocalStorage();
+            renderCatalogoList();
+            showToast('Item removido do catálogo.');
+        }
+
+        function clearCatalogoForm() {
+            document.getElementById('cat-edit-id').value = '';
+            document.getElementById('cat-desc').value = '';
+            document.getElementById('cat-marca').value = '';
+            document.getElementById('cat-preco').value = '';
+            document.getElementById('cat-form-title').innerText = '➕ Adicionar Item ao Catálogo';
+        }
+
+        // Emissor / Logo Management
+        function syncEmissorUI() {
+            const e = appState.emissor;
+            document.getElementById('emissor-nome').value = e.nome || '';
+            document.getElementById('emissor-doc').value = e.doc || '';
+            document.getElementById('emissor-fone').value = e.fone || '';
+            document.getElementById('emissor-email').value = e.email || '';
+            document.getElementById('emissor-endereco').value = e.endereco || '';
+
+            document.getElementById('preview-emissor-nome-orc').innerText = e.nome || 'FLP Automação Industrial';
+            document.getElementById('preview-emissor-doc-orc').innerText = 'CNPJ: ' + (e.doc || '-');
+            document.getElementById('preview-emissor-contato-orc').innerText = (e.email || '') + ' | ' + (e.fone || '');
+
+            document.getElementById('preview-rel-emissor-nome').innerText = e.nome || 'FLP Automação Industrial';
+            document.getElementById('preview-rel-emissor-doc').innerText = 'CNPJ: ' + (e.doc || '-');
+
+            const logoPreviewBox = document.getElementById('emissor-logo-preview-box');
+            if (e.logo) {
+                logoPreviewBox.innerHTML = `<img src="${e.logo}" class="w-full h-full object-contain">`;
+                document.getElementById('preview-orc-logo-box').innerHTML = `<img src="${e.logo}" class="max-h-16 max-w-[220px] object-contain">`;
+            } else {
+                logoPreviewBox.innerHTML = `<span class="text-flp-yellow font-black text-2xl">FLP</span>`;
+            }
+        }
+
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    appState.emissor.logo = e.target.result;
+                    syncEmissorUI();
+                    saveToLocalStorage();
+                    showToast('Logotipo atualizado!');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveEmissorProfile() {
+            appState.emissor.nome = document.getElementById('emissor-nome').value;
+            appState.emissor.doc = document.getElementById('emissor-doc').value;
+            appState.emissor.fone = document.getElementById('emissor-fone').value;
+            appState.emissor.email = document.getElementById('emissor-email').value;
+            appState.emissor.endereco = document.getElementById('emissor-endereco').value;
+
+            syncEmissorUI();
+            saveToLocalStorage();
+            showToast('Perfil da empresa atualizado!');
+        }
+
+        // TAB 1: Orçamento Items Render (com Catálogo e Subtotal Editável)
+        function renderOrcamentoItems() {
+            const tbody = document.getElementById('orc-items-tbody');
+            tbody.innerHTML = '';
+
+            appState.orcamentoItems.forEach((item) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-200';
+                tr.innerHTML = `
+                    <td class="p-2">
+                        <input type="text" list="list-servicos-global" value="${item.desc}" onchange="autoFillItemPriceFromCatalog(${item.id}, this.value)" oninput="updateItemDesc(${item.id}, this.value)" placeholder="Selecione do catálogo ou digite..." class="w-full bg-transparent border-b border-slate-300 focus:border-black text-xs p-1 rounded font-medium text-slate-900 outline-none">
+                    </td>
+                    <td class="p-2">
+                        <input type="text" list="list-marcas" value="${item.marca || ''}" oninput="updateItemMarca(${item.id}, this.value)" placeholder="Marca / Ref..." class="w-full bg-transparent border-b border-slate-300 focus:border-black text-xs p-1 rounded text-slate-700 outline-none">
+                    </td>
+                    <td class="p-2 text-center">
+                        <input type="number" min="1" value="${item.qtd}" oninput="updateItemQtd(${item.id}, this.value)" class="w-12 text-center bg-transparent border-b border-slate-300 focus:border-black text-xs p-1 rounded font-bold text-slate-900 outline-none">
+                    </td>
+                    <td class="p-2 text-right">
+                        <input type="number" step="0.01" min="0" value="${item.valor.toFixed(2)}" oninput="updateItemValor(${item.id}, this.value)" class="w-20 text-right bg-transparent border-b border-slate-300 focus:border-black text-xs p-1 rounded text-slate-900 outline-none">
+                    </td>
+                    <td class="p-2 text-right">
+                        <input type="number" step="0.01" min="0" value="${(item.subtotal !== undefined ? item.subtotal : (item.qtd * item.valor)).toFixed(2)}" oninput="updateItemSubtotalDirect(${item.id}, this.value)" class="w-24 text-right font-black bg-yellow-50/50 border-b-2 border-flp-yellow focus:border-black text-xs p-1 rounded text-slate-900 outline-none" title="Subtotal editável">
+                    </td>
+                    <td class="p-2 text-center no-print">
+                        <button onclick="removeOrcamentoItem(${item.id})" class="text-slate-400 hover:text-rose-600 p-1">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            lucide.createIcons();
+            calculateOrcamentoTotals();
+        }
+
+        function autoFillItemPriceFromCatalog(itemId, val) {
+            const catItem = appState.catalogo.find(c => c.desc.toLowerCase() === val.toLowerCase());
+            if (catItem) {
+                const item = appState.orcamentoItems.find(i => i.id === itemId);
+                if (item) {
+                    item.desc = catItem.desc;
+                    if (catItem.marca) item.marca = catItem.marca;
+                    item.valor = parseFloat(catItem.preco) || 0;
+                    item.subtotal = item.qtd * item.valor;
+                    renderOrcamentoItems();
+                    showToast(`Valor padrão R$ ${item.valor.toFixed(2)} puxado do catálogo!`);
+                }
+            }
+        }
+
+        function addOrcamentoItem() {
+            appState.orcamentoItems.push({ id: Date.now(), desc: '', marca: 'WEG', qtd: 1, valor: 250.00, subtotal: 250.00 });
+            renderOrcamentoItems();
+        }
+
+        function removeOrcamentoItem(id) {
+            if (appState.orcamentoItems.length <= 1) {
+                showToast('A proposta precisa conter ao menos um item.');
+                return;
+            }
+            appState.orcamentoItems = appState.orcamentoItems.filter(i => i.id !== id);
+            renderOrcamentoItems();
+        }
+
+        function updateItemDesc(id, val) {
+            const item = appState.orcamentoItems.find(i => i.id === id);
+            if (item) item.desc = val;
+        }
+
+        function updateItemMarca(id, val) {
+            const item = appState.orcamentoItems.find(i => i.id === id);
+            if (item) item.marca = val;
+        }
+
+        function updateItemQtd(id, val) {
+            const item = appState.orcamentoItems.find(i => i.id === id);
+            if (item) {
+                item.qtd = parseFloat(val) || 0;
+                item.subtotal = item.qtd * item.valor;
+                renderOrcamentoItems();
+            }
+        }
+
+        function updateItemValor(id, val) {
+            const item = appState.orcamentoItems.find(i => i.id === id);
+            if (item) {
+                item.valor = parseFloat(val) || 0;
+                item.subtotal = item.qtd * item.valor;
+                renderOrcamentoItems();
+            }
+        }
+
+        function updateItemSubtotalDirect(id, val) {
+            const item = appState.orcamentoItems.find(i => i.id === id);
+            if (item) {
+                item.subtotal = parseFloat(val) || 0;
+                calculateOrcamentoTotals();
+            }
+        }
+
+        function calculateOrcamentoTotals() {
+            let subtotalGeral = 0;
+            appState.orcamentoItems.forEach(i => {
+                const sub = (i.subtotal !== undefined) ? i.subtotal : (i.qtd * i.valor);
+                subtotalGeral += sub;
+            });
+
+            const descPorcent = parseFloat(document.getElementById('orc-desconto-porcent').value) || 0;
+            const taxasPorcent = parseFloat(document.getElementById('orc-taxas-porcent').value) || 0;
+            
+            const trtCheck = document.getElementById('orc-trt-check').checked;
+            const trtContainer = document.getElementById('orc-trt-valor-container');
+            let trtValor = 0;
+
+            if (trtCheck) {
+                trtContainer.classList.remove('hidden');
+                trtValor = parseFloat(document.getElementById('orc-trt-valor').value) || 0;
+            } else {
+                trtContainer.classList.add('hidden');
+            }
+
+            const descontoVal = (subtotalGeral * descPorcent) / 100;
+            const taxasVal = (subtotalGeral * taxasPorcent) / 100;
+            const total = Math.max(0, subtotalGeral - descontoVal + taxasVal + trtValor);
+
+            document.getElementById('preview-orc-subtotal').innerText = 'R$ ' + subtotalGeral.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            
+            // Desconto Row
+            const descRow = document.getElementById('preview-orc-desconto-row');
+            if (descontoVal > 0) {
+                descRow.classList.remove('hidden');
+                document.getElementById('preview-orc-desconto-val').innerText = `- R$ ${descontoVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} (${descPorcent}%)`;
+            } else descRow.classList.add('hidden');
+
+            // Taxas Row
+            const taxasRow = document.getElementById('preview-orc-taxas-row');
+            if (taxasVal > 0) {
+                taxasRow.classList.remove('hidden');
+                document.getElementById('preview-orc-taxas-val').innerText = `+ R$ ${taxasVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} (${taxasPorcent}%)`;
+            } else taxasRow.classList.add('hidden');
+
+            // TRT Row
+            const trtRow = document.getElementById('preview-orc-trt-row');
+            if (trtCheck && trtValor > 0) {
+                trtRow.classList.remove('hidden');
+                document.getElementById('preview-orc-trt-val').innerText = `+ R$ ${trtValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            } else trtRow.classList.add('hidden');
+
+            document.getElementById('preview-orc-total').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function updateOrcamentoPreview() {
+            const cliNome = document.getElementById('orc-cliente-nome').value;
+            const cliDoc = document.getElementById('orc-cliente-doc').value;
+            const cliFone = document.getElementById('orc-cliente-fone').value;
+            const cliCidade = document.getElementById('orc-cliente-cidade').value;
+            const cliUf = document.getElementById('orc-cliente-uf').value;
+            const statusSelect = document.getElementById('orc-status').value || 'Aguardando Aprovação';
+
+            document.getElementById('preview-cli-nome').innerText = cliNome || 'Empresa Cliente S/A';
+            document.getElementById('preview-cli-doc').innerText = 'CNPJ/CPF: ' + (cliDoc || '-');
+            document.getElementById('preview-cli-cidade').innerText = (cliCidade || 'Cidade') + (cliUf ? ' - ' + cliUf.toUpperCase() : '');
+            document.getElementById('preview-cli-fone').innerText = 'Tel: ' + (cliFone || '-');
+
+            const badge = document.getElementById('preview-orc-status-badge');
+            badge.innerText = statusSelect.toUpperCase();
+            
+            if(statusSelect.includes('Aprovado')) {
+                badge.style.backgroundColor = '#10B981'; badge.style.color = '#ffffff';
+            } else if(statusSelect.includes('Andamento')) {
+                badge.style.backgroundColor = '#3B82F6'; badge.style.color = '#ffffff';
+            } else if(statusSelect.includes('Concluído')) {
+                badge.style.backgroundColor = '#8B5CF6'; badge.style.color = '#ffffff';
+            } else if(statusSelect.includes('Cancelado')) {
+                badge.style.backgroundColor = '#EF4444'; badge.style.color = '#ffffff';
+            } else {
+                badge.style.backgroundColor = '#FFC700'; badge.style.color = '#0A0D12';
+            }
+
+            document.getElementById('preview-orc-numero').innerText = '#' + (document.getElementById('orc-numero').value || 'FLP-001');
+            
+            const rawData = document.getElementById('orc-data').value;
+            document.getElementById('preview-orc-data').innerText = rawData ? new Date(rawData + 'T00:00:00').toLocaleDateString('pt-BR') : '--/--/----';
+            
+            document.getElementById('preview-orc-validade').innerText = document.getElementById('orc-validade').value || '15';
+            document.getElementById('preview-orc-prazo').innerText = document.getElementById('orc-prazo').value || 'A combinar';
+            document.getElementById('preview-orc-pagamento').innerText = document.getElementById('orc-pagamento').value || 'A combinar';
+
+            document.getElementById('preview-orc-obs').innerText = document.getElementById('orc-obs').value;
+        }
+
+        function clearOrcamentoForm() {
+            document.getElementById('orc-cliente-nome').value = '';
+            document.getElementById('orc-cliente-doc').value = '';
+            document.getElementById('orc-cliente-fone').value = '';
+            document.getElementById('orc-cliente-cidade').value = '';
+            document.getElementById('orc-cliente-uf').value = '';
+            document.getElementById('orc-prazo').value = '';
+            document.getElementById('orc-pagamento').value = '';
+            document.getElementById('orc-desconto-porcent').value = 0;
+            document.getElementById('orc-taxas-porcent').value = 0;
+            document.getElementById('orc-trt-check').checked = false;
+            document.getElementById('orc-select-cliente').value = '';
+            
+            appState.orcamentoItems = [{ id: Date.now(), desc: 'Diagnóstico de Falhas Elétricas e Paradas de Máquina', marca: 'WEG', qtd: 1, valor: 350.00, subtotal: 350.00 }];
+            renderOrcamentoItems();
+            updateOrcamentoPreview();
+            showToast('Formulário de orçamento limpo.');
+        }
+
+        function saveOrcamento() {
+            const num = document.getElementById('orc-numero').value || 'FLP-' + Date.now().toString().slice(-4);
+            const cliente = document.getElementById('orc-cliente-nome').value || 'Cliente Não Informado';
+            const totalStr = document.getElementById('preview-orc-total').innerText;
+
+            const docObj = {
+                id: Date.now(),
+                tipo: 'ORÇAMENTO',
+                codigo: num,
+                cliente: cliente,
+                data: document.getElementById('orc-data').value,
+                valor: totalStr,
+                payload: {
+                    clienteNome: cliente,
+                    clienteDoc: document.getElementById('orc-cliente-doc').value,
+                    clienteFone: document.getElementById('orc-cliente-fone').value,
+                    clienteCidade: document.getElementById('orc-cliente-cidade').value,
+                    clienteUf: document.getElementById('orc-cliente-uf').value,
+                    numero: num,
+                    data: document.getElementById('orc-data').value,
+                    validade: document.getElementById('orc-validade').value,
+                    prazo: document.getElementById('orc-prazo').value,
+                    pagamento: document.getElementById('orc-pagamento').value,
+                    status: document.getElementById('orc-status').value,
+                    descPorcent: document.getElementById('orc-desconto-porcent').value,
+                    taxasPorcent: document.getElementById('orc-taxas-porcent').value,
+                    trtCheck: document.getElementById('orc-trt-check').checked,
+                    trtValor: document.getElementById('orc-trt-valor').value,
+                    obs: document.getElementById('orc-obs').value,
+                    items: [...appState.orcamentoItems]
+                }
+            };
+
+            appState.documentsHistory.unshift(docObj);
+            saveToLocalStorage();
+            renderHistoryList();
+            updateDashboardMetrics();
+            showToast('Orçamento FLP salvo com sucesso!');
+        }
+
+        // ENVIO WHATSAPP & EMAIL
+        function sendOrcamentoWhatsApp() {
+            const num = document.getElementById('orc-numero').value || 'FLP-001';
+            const cli = document.getElementById('orc-cliente-nome').value || 'Cliente';
+            const total = document.getElementById('preview-orc-total').innerText;
+            const pgto = document.getElementById('orc-pagamento').value || 'A combinar';
+            const fone = document.getElementById('orc-cliente-fone').value.replace(/\D/g, '');
+
+            const texto = `Olá! Segue o resumo da Proposta Comercial da *FLP Automação & Manutenção Industrial*:%0A%0A` +
+                          `📌 *Proposta:* #${num}%0A` +
+                          `🏢 *Cliente:* ${cli}%0A` +
+                          `💰 *Valor Total Líquido:* ${total}%0A` +
+                          `💳 *Condições de Pagamento:* ${pgto}%0A%0A` +
+                          `Ficamos à disposição para esclarecimentos técnicos ou aprovação do serviço!`;
+
+            const url = fone ? `https://wa.me/55${fone}?text=${texto}` : `https://wa.me/?text=${texto}`;
+            window.open(url, '_blank');
+        }
+
+        function sendOrcamentoEmail() {
+            const num = document.getElementById('orc-numero').value || 'FLP-001';
+            const cli = document.getElementById('orc-cliente-nome').value || 'Cliente';
+            const total = document.getElementById('preview-orc-total').innerText;
+
+            const assunto = encodeURIComponent(`Proposta Comercial #${num} - FLP Automação Industrial`);
+            const corpo = encodeURIComponent(`Olá,\n\nAgradecemos a oportunidade de apresentar nossa Proposta Comercial #${num} para ${cli}.\n\nValor Total Líquido: ${total}\n\nPermanecemos à disposição para eventuais dúvidas ou agendamento do serviço.\n\nAtenciosamente,\nFLP Automação e Manutenção Industrial`);
+
+            window.location.href = `mailto:?subject=${assunto}&body=${corpo}`;
+        }
+
+        function sendRelatorioWhatsApp() {
+            const tit = document.getElementById('rel-titulo').value || 'Relatório Técnico';
+            const cli = document.getElementById('rel-cliente').value || 'Cliente';
+            const equip = document.getElementById('rel-equipamento').value || 'Equipamento';
+
+            const texto = `Olá! Segue o registro da Intervenção Técnica efetuada pela *FLP Automação Industrial*:%0A%0A` +
+                          `🛠️ *Serviço:* ${tit}%0A` +
+                          `🏢 *Cliente:* ${cli}%0A` +
+                          `⚙️ *Equipamento:* ${equip}%0A%0A` +
+                          `O relatório completo com laudo de avaria e diagnóstico foi emitido com sucesso.`;
+
+            window.open(`https://wa.me/?text=${texto}`, '_blank');
+        }
+
+        // IMPRESSÃO COM NOME DO FICHEIRO PDF AUTOMÁTICO
+        function printDocumentWithPDFName(type) {
+            const oldTitle = document.title;
+            let filename = "FLP_Documento";
+
+            if (type === 'orcamento') {
+                const num = document.getElementById('orc-numero').value || '001';
+                const cli = (document.getElementById('orc-cliente-nome').value || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_');
+                filename = `Orcamento_${num}_${cli}`;
+            } else if (type === 'relatorio') {
+                const tit = (document.getElementById('rel-titulo').value || 'Relatorio').replace(/[^a-zA-Z0-9]/g, '_');
+                const cli = (document.getElementById('rel-cliente').value || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_');
+                filename = `Relatorio_${tit}_${cli}`;
+            }
+
+            document.title = filename;
+            window.print();
+            setTimeout(() => { document.title = oldTitle; }, 1000);
+        }
+
+        // TAB 2: Relatório Técnico
+        function initSignaturePad() {
+            const canvas = document.getElementById('sig-canvas');
+            if (!canvas) return;
+            appState.signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgb(248, 250, 252)',
+                penColor: 'rgb(10, 13, 18)'
+            });
+
+            appState.signaturePad.addEventListener("endStroke", () => {
+                updateSignaturePreview();
+            });
+
+            window.addEventListener("resize", resizeCanvas);
+            resizeCanvas();
+        }
+
+        function resizeCanvas() {
+            const canvas = document.getElementById('sig-canvas');
+            if (!canvas) return;
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+            if (appState.signaturePad) appState.signaturePad.clear();
+        }
+
+        function clearSignaturePad() {
+            if (appState.signaturePad) {
+                appState.signaturePad.clear();
+                document.getElementById('preview-rel-sig-img').classList.add('hidden');
+            }
+        }
+
+        function updateSignaturePreview() {
+            if (appState.signaturePad && !appState.signaturePad.isEmpty()) {
+                const img = document.getElementById('preview-rel-sig-img');
+                img.src = appState.signaturePad.toDataURL();
+                img.classList.remove('hidden');
+            }
+        }
+
+        function handlePhotoUpload(event) {
+            const files = Array.from(event.target.files);
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    appState.relatorioPhotos.push(e.target.result);
+                    renderPhotoThumbs();
+                    updateRelatorioPhotosPreview();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removePhoto(index) {
+            appState.relatorioPhotos.splice(index, 1);
+            renderPhotoThumbs();
+            updateRelatorioPhotosPreview();
+        }
+
+        function renderPhotoThumbs() {
+            const container = document.getElementById('rel-photos-thumbs');
+            container.innerHTML = '';
+            appState.relatorioPhotos.forEach((src, idx) => {
+                const div = document.createElement('div');
+                div.className = 'relative group rounded overflow-hidden h-16 border border-flp-border';
+                div.innerHTML = `
+                    <img src="${src}" class="w-full h-full object-cover">
+                    <button onclick="removePhoto(${idx})" class="absolute top-0.5 right-0.5 bg-rose-600 text-white p-0.5 rounded-full">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function updateRelatorioPhotosPreview() {
+            const container = document.getElementById('preview-rel-photos-container');
+            const grid = document.getElementById('preview-rel-photos-grid');
+
+            if (appState.relatorioPhotos.length > 0) {
+                container.classList.remove('hidden');
+                grid.innerHTML = '';
+                appState.relatorioPhotos.forEach((src, idx) => {
+                    const box = document.createElement('div');
+                    box.className = 'border border-slate-300 p-1.5 bg-slate-50 rounded text-center';
+                    box.innerHTML = `
+                        <img src="${src}" class="w-full h-36 object-cover rounded mb-1 border border-slate-200">
+                        <span class="text-[9px] font-bold text-slate-700 uppercase">Foto ${idx + 1} - Evidência de Campo</span>
+                    `;
+                    grid.appendChild(box);
+                });
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        function updateRelatorioPreview() {
+            const titulo = document.getElementById('rel-titulo').value;
+            const cliente = document.getElementById('rel-cliente').value;
+            const dataRaw = document.getElementById('rel-data').value;
+            const equip = document.getElementById('rel-equipamento').value;
+            const marca = document.getElementById('rel-marca').value;
+            const tecnico = document.getElementById('rel-tecnico').value;
+            const registro = document.getElementById('rel-registro').value;
+
+            document.getElementById('preview-rel-titulo').innerText = titulo || 'RELATÓRIO TÉCNICO DE CAMPO';
+            document.getElementById('preview-rel-cli-nome').innerText = cliente || 'Cliente Não Especificado';
+            document.getElementById('preview-rel-equip').innerText = 'Equipamento: ' + (equip || '-') + (marca ? ` (${marca})` : '');
+            document.getElementById('preview-rel-data').innerText = dataRaw ? new Date(dataRaw + 'T00:00:00').toLocaleDateString('pt-BR') : '--/--/----';
+            document.getElementById('preview-rel-tec-nome').innerText = tecnico || 'Técnico FLP';
+            document.getElementById('preview-rel-tec-reg').innerText = registro ? 'Reg: ' + registro : '';
+
+            document.getElementById('preview-rel-sig-nome').innerText = tecnico || 'Técnico FLP Responsável';
+            document.getElementById('preview-rel-sig-reg').innerText = registro || 'Responsável Técnico';
+
+            document.getElementById('preview-rel-diagnostico').innerText = document.getElementById('rel-diagnostico').value || 'Aguardando preenchimento...';
+            document.getElementById('preview-rel-escopo').innerText = document.getElementById('rel-escopo').value || 'Aguardando preenchimento...';
+            document.getElementById('preview-rel-materiais').innerText = document.getElementById('rel-materiais').value || 'Nenhum componente registrado.';
+            document.getElementById('preview-rel-recomendacoes').innerText = document.getElementById('rel-recomendacoes').value || 'Equipamento liberado em condições normais de operação.';
+        }
+
+        function clearRelatorioForm() {
+            document.getElementById('rel-titulo').value = '';
+            document.getElementById('rel-cliente').value = '';
+            document.getElementById('rel-equipamento').value = '';
+            document.getElementById('rel-marca').value = '';
+            document.getElementById('rel-tecnico').value = '';
+            document.getElementById('rel-registro').value = '';
+            document.getElementById('rel-diagnostico').value = '';
+            document.getElementById('rel-escopo').value = '';
+            document.getElementById('rel-materiais').value = '';
+            document.getElementById('rel-recomendacoes').value = '';
+            document.getElementById('rel-select-cliente').value = '';
+            appState.relatorioPhotos = [];
+            clearSignaturePad();
+            renderPhotoThumbs();
+            updateRelatorioPhotosPreview();
+            updateRelatorioPreview();
+            showToast('Relatório limpo com sucesso.');
+        }
+
+        function saveRelatorio() {
+            const titulo = document.getElementById('rel-titulo').value || 'Relatório Técnico';
+            const cliente = document.getElementById('rel-cliente').value || 'Cliente Não Especificado';
+            
+            let sigData = null;
+            if (appState.signaturePad && !appState.signaturePad.isEmpty()) {
+                sigData = appState.signaturePad.toDataURL();
+            }
+
+            const docObj = {
+                id: Date.now(),
+                tipo: 'RELATÓRIO',
+                codigo: 'REL-' + Date.now().toString().slice(-4),
+                cliente: cliente,
+                data: document.getElementById('rel-data').value,
+                valor: titulo,
+                payload: {
+                    titulo: titulo,
+                    cliente: cliente,
+                    equipamento: document.getElementById('rel-equipamento').value,
+                    marca: document.getElementById('rel-marca').value,
+                    data: document.getElementById('rel-data').value,
+                    tecnico: document.getElementById('rel-tecnico').value,
+                    registro: document.getElementById('rel-registro').value,
+                    diagnostico: document.getElementById('rel-diagnostico').value,
+                    escopo: document.getElementById('rel-escopo').value,
+                    materiais: document.getElementById('rel-materiais').value,
+                    recomendacoes: document.getElementById('rel-recomendacoes').value,
+                    photos: [...appState.relatorioPhotos],
+                    signature: sigData
+                }
+            };
+
+            appState.documentsHistory.unshift(docObj);
+            saveToLocalStorage();
+            renderHistoryList();
+            updateDashboardMetrics();
+            showToast('Relatório técnico salvo!');
+        }
+
+        // TAB 5: History
+        function renderHistoryList() {
+            const tbody = document.getElementById('history-tbody');
+            const search = (document.getElementById('history-search').value || '').toLowerCase();
+            tbody.innerHTML = '';
+
+            const filtered = appState.documentsHistory.filter(doc => {
+                return doc.codigo.toLowerCase().includes(search) || 
+                       doc.cliente.toLowerCase().includes(search) || 
+                       doc.valor.toLowerCase().includes(search) ||
+                       doc.tipo.toLowerCase().includes(search);
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">Nenhum documento encontrado no histórico FLP.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(doc => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/40 transition border-b border-flp-border';
+                const isOrc = doc.tipo === 'ORÇAMENTO';
+                
+                tr.innerHTML = `
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-black border ${isOrc ? 'bg-flp-yellow/20 text-flp-yellow border-flp-yellow/40' : 'bg-purple-500/20 text-purple-400 border-purple-500/40'}">${doc.tipo}</span>
+                    </td>
+                    <td class="p-3 font-bold text-white">${doc.codigo}</td>
+                    <td class="p-3 text-slate-200">${doc.cliente}</td>
+                    <td class="p-3 text-slate-400 text-xs">${doc.data ? new Date(doc.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
+                    <td class="p-3 font-bold text-flp-yellow">${doc.valor}</td>
+                    <td class="p-3 text-right space-x-2">
+                        <button onclick="loadDocumentFromHistory(${doc.id})" class="p-1.5 bg-black hover:bg-slate-800 text-flp-yellow rounded transition border border-flp-border" title="Editar">
+                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteDocumentFromHistory(${doc.id})" class="p-1.5 bg-black hover:bg-slate-800 text-rose-500 rounded transition border border-flp-border" title="Excluir">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            lucide.createIcons();
+        }
+
+        function loadDocumentFromHistory(id) {
+            const doc = appState.documentsHistory.find(d => d.id === id);
+            if (!doc) return;
+
+            if (doc.tipo === 'ORÇAMENTO') {
+                const p = doc.payload;
+                document.getElementById('orc-cliente-nome').value = p.clienteNome || '';
+                document.getElementById('orc-cliente-doc').value = p.clienteDoc || '';
+                document.getElementById('orc-cliente-fone').value = p.clienteFone || '';
+                document.getElementById('orc-cliente-cidade').value = p.clienteCidade || '';
+                document.getElementById('orc-cliente-uf').value = p.clienteUf || '';
+                document.getElementById('orc-numero').value = p.numero || '';
+                document.getElementById('orc-data').value = p.data || '';
+                document.getElementById('orc-validade').value = p.validade || 15;
+                document.getElementById('orc-prazo').value = p.prazo || '';
+                document.getElementById('orc-pagamento').value = p.pagamento || '';
+                document.getElementById('orc-status').value = p.status || 'Aguardando Aprovação';
+                document.getElementById('orc-desconto-porcent').value = p.descPorcent || 0;
+                document.getElementById('orc-taxas-porcent').value = p.taxasPorcent || 0;
+                document.getElementById('orc-trt-check').checked = !!p.trtCheck;
+                document.getElementById('orc-trt-valor').value = p.trtValor || 65.00;
+                document.getElementById('orc-obs').value = p.obs || '';
+
+                if (p.items) appState.orcamentoItems = [...p.items];
+                renderOrcamentoItems();
+                updateOrcamentoPreview();
+                switchTab('orcamento');
+                showToast('Orçamento recarregado!');
+            } else {
+                const p = doc.payload;
+                document.getElementById('rel-titulo').value = p.titulo || '';
+                document.getElementById('rel-cliente').value = p.cliente || '';
+                document.getElementById('rel-equipamento').value = p.equipamento || '';
+                document.getElementById('rel-marca').value = p.marca || '';
+                document.getElementById('rel-data').value = p.data || '';
+                document.getElementById('rel-tecnico').value = p.tecnico || '';
+                document.getElementById('rel-registro').value = p.registro || '';
+                document.getElementById('rel-diagnostico').value = p.diagnostico || '';
+                document.getElementById('rel-escopo').value = p.escopo || '';
+                document.getElementById('rel-materiais').value = p.materiais || '';
+                document.getElementById('rel-recomendacoes').value = p.recomendacoes || '';
+
+                if (p.photos) appState.relatorioPhotos = [...p.photos];
+                renderPhotoThumbs();
+                updateRelatorioPhotosPreview();
+
+                if (p.signature) {
+                    const img = document.getElementById('preview-rel-sig-img');
+                    img.src = p.signature;
+                    img.classList.remove('hidden');
+                }
+
+                updateRelatorioPreview();
+                switchTab('relatorio');
+                showToast('Relatório recarregado!');
+            }
+        }
+
+        function deleteDocumentFromHistory(id) {
+            appState.documentsHistory = appState.documentsHistory.filter(d => d.id !== id);
+            saveToLocalStorage();
+            renderHistoryList();
+            updateDashboardMetrics();
+            showToast('Registro excluído do histórico.');
+        }
+    </script>
+</body>
+</html>
